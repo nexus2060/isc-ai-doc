@@ -1,0 +1,4078 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title> Keeping Post Process (n_cst_keeping_post) Analysis </title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Sarabun:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --sidebar-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-color: #38bdf8;
+            --accent-gradient: linear-gradient(135deg, #38bdf8, #818cf8);
+            --card-bg: #1e293b;
+            --code-bg: #090d16;
+            --border-color: #334155;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Sarabun', 'Outfit', sans-serif; background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; display: flex; min-height: 100vh; }
+        .sidebar { width: 320px; background-color: var(--sidebar-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; position: fixed; top: 0; bottom: 0; left: 0; overflow-y: auto; z-index: 100; }
+        .sidebar h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 1.5rem; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .sidebar ul { list-style: none; }
+        .sidebar li { margin-bottom: 0.5rem; }
+        .sidebar a { color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; display: block; padding: 0.5rem 0.75rem; border-radius: 0.5rem; transition: all 0.3s ease; }
+        .sidebar a:hover, .sidebar a.active { background-color: rgba(56, 189, 248, 0.1); color: var(--accent-color); padding-left: 1rem; }
+        .content { margin-left: 320px; padding: 3rem 4rem; flex-grow: 1; max-width: 1200px; }
+        header { margin-bottom: 3rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; }
+        header h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        header p { color: var(--text-secondary); font-size: 1.1rem; }
+        h2 { font-size: 1.75rem; font-weight: 700; margin: 2.5rem 0 1.5rem 0; color: var(--accent-color); border-left: 4px solid var(--accent-color); padding-left: 1rem; }
+        p { margin-bottom: 1.25rem; color: #cbd5e1; font-size: 1rem; }
+        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 1rem; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); }
+        .card h3 { font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; color: #f8fafc; display: flex; align-items: center; }
+        .card h3::before { content: '◆'; color: var(--accent-color); margin-right: 0.75rem; }
+        .card p.desc { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1.5rem; background-color: rgba(15, 23, 42, 0.4); padding: 0.75rem 1rem; border-radius: 0.5rem; border-left: 3px solid var(--text-secondary); }
+        .code-container { position: relative; }
+        .code-header { background-color: #1e293b; color: var(--text-secondary); padding: 0.5rem 1rem; font-family: monospace; font-size: 0.8rem; border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .btn-toggle { background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 0.25rem 0.75rem; border-radius: 0.25rem; cursor: pointer; font-size: 0.75rem; transition: all 0.3s ease; }
+        .btn-toggle:hover { background-color: var(--accent-color); color: var(--bg-color); border-color: var(--accent-color); }
+        pre { background-color: var(--code-bg); padding: 1.25rem; border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem; overflow-x: auto; font-family: 'Consolas', 'Courier New', Courier, monospace; font-size: 0.9rem; color: #e2e8f0; border: 1px solid var(--border-color); border-top: none; max-height: 450px; transition: max-height 0.4s ease; }
+        pre.expanded { max-height: none; }
+        table { width: 100%; border-collapse: collapse; margin: 2rem 0; font-size: 0.95rem; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: rgba(56, 189, 248, 0.05); color: var(--accent-color); font-weight: 600; }
+        tr:hover td { background-color: rgba(255, 255, 255, 0.02); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+        /* Collapsible details style */
+        details { margin-top: 1rem; border: 1px solid var(--border-color); border-radius: 0.5rem; background-color: rgba(15, 23, 42, 0.2); }
+        summary { font-weight: 600; padding: 0.75rem 1.25rem; color: var(--accent-color); cursor: pointer; user-select: none; outline: none; }
+        summary:hover { background-color: rgba(56, 189, 248, 0.05); }
+        details[open] summary { border-bottom: 1px solid var(--border-color); }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Keeping Post Docs</h2>
+        <ul>
+            <li><a href="#overview" class="active">ภาพรวมระบบ</a></li>
+            <li><a href="#flowchart">แผนภาพขั้นตอน</a></li>
+            <li><a href="#steps">ขั้นตอนอย่างละเอียด</a></li>
+            <li><a href="#database">ตารางที่เกี่ยวข้อง</a></li>
+            <li><a href="#coop">ข้อสังเกตรายสหกรณ์</a></li>
+        </ul>
+    </div>
+    <div class="content">
+        <header id="overview">
+            <h1> Keeping Post Process </h1>
+            <p> วิเคราะห์ระบบประมวลผลตัดยอดเรียกเก็บเงินของสมาชิกสหกรณ์ (n_cst_keeping_post) </p>
+        </header>
+        <div class="card">
+            <h3>1. บทนำและวัตถุประสงค์ (Overview & Purpose)</h3>
+            <p>กระบวนการ <b>Keeping Post (ตัดยอดรายการเรียกเก็บประจำเดือน)</b> ทำหน้าที่โอนย้ายและประมวลผลข้อมูลการชำระเงินของสมาชิกสหกรณ์ จากตารางพักข้อมูลชั่วคราว (Temporary/Staging Tables) ได้แก่ <code>kptempreceive</code> และ <code>kptempreceivedet</code> ไปยังตารางหลักของระบบ (Master Tables) ต่างๆ เช่น ทะเบียนสมาชิก (<code>mbmembmaster</code>), หุ้น (<code>shsharemaster</code>), หนี้เงินกู้ (<code>lncontmaster</code>), เงินฝาก (<code>dpdeptmaster</code>) และระบบประกัน (<code>insinsuremaster</code>) พร้อมทั้งบันทึกประวัติการทำรายการ (Statement) และสร้างใบเสร็จรับเงินจริงในระบบ (<code>kpmastreceive</code> และ <code>kpmastreceivedet</code>)</p>
+        </div>
+        <div class="card" id="flowchart">
+            <h3>2. แผนภาพแสดงขั้นตอนการประมวลผล (Processing Flowchart)</h3>
+            <p>แผนภาพแสดงลำดับการเรียกประมวลผลฟังก์ชันย่อยตามลำดับธุรกรรมของระบบเรียกเก็บเงินเดือนสมาชิก:</p>
+            <div style="background-color: var(--code-bg); padding: 1.5rem; border-radius: 0.5rem; text-align: center; border: 1px solid var(--border-color);">
+               <!-- Mermaid Render Placeholder / Instruction -->
+               <p style="color: var(--accent-color); font-weight: 600; font-size: 0.95rem; margin-bottom: 0.5rem;">Mermaid Flowchart Diagram</p>
+               <pre style="border: none; max-height: none; background: transparent; font-size: 0.85rem; color: #a7f3d0; text-align: left;><code class="language-mermaid">flowchart TD
+    Start([เริ่มต้น: of_rcvprocess_post]) --> Step1[1. โหลดข้อมูลเงื่อนไข XML & ค่าคงที่ระบบ]
+    Step1 --> Step2[2. อัปเดต Sequence ล่าสุด: of_post_toupseqno]
+    Step2 --> Step3[3. สร้างหัวใบเสร็จรับเงินหลัก: of_post_tomast]
+    Step3 --> Step4[4. ประมวลผลค่าธรรมเนียมแรกเข้า: of_post_tofee]
+    Step4 --> Step5[5. ประมวลผลค่าหุ้นรายเดือน: of_post_toshare]
+    Step5 --> Step6[6. ประมวลผลหนี้เงินกู้รายเดือน: of_post_toloan / of_post_toloan_egat]
+    Step6 --> Step7[7. ประมวลผลเบี้ยประกัน: of_post_toinsure]
+    Step7 --> Step8[8. ประมวลผลรายการเรียกเก็บอื่นๆ: of_post_toother]
+    Step8 --> Step9[9. ประมวลผลรายการหักคืนเงินเกิน: of_postmoneyreturn]
+    Step9 --> Step10[10. ประมวลผลรายการแสดงผลหยุดเก็บ: of_post_todisplay]
+    Step10 --> Step11[11. ประมวลผลเงินฝากรายเดือน: of_post_todetpmthcut]
+    Step11 --> Step12[12. ลบใบเสร็จที่ไม่มีรายละเอียด: of_del_mast]
+    Step12 --> Commit1{{Commit จุดแรกสำเร็จ?}}
+    Commit1 -- ใช่ --> Step13{{ตรวจสอบ flag เงินเดือนไม่พอหัก ii_mnenoughflg == 1?}}
+    Commit1 -- ไม่ใช่ --> Rollback1[Rollback ข้อมูล]
+    Step13 -- ใช่ --> Step14[13. ยกเลิกรายการที่เก็บไม่ได้ทั้งหมด: of_post_tocancelall]
+    Step14 --> Step15[14. ยกเลิกรายการเก็บได้บางส่วน: of_post_tocancelpartial]
+    Step13 -- ไม่ใช่ --> Commit2[Commit & จบการทำงาน]
+    Step14 --> Commit2
+    Step15 --> Commit2
+    Rollback1 --> End([จบการทำงาน - มีข้อผิดพลาด])
+    Commit2 --> End2([จบการทำงาน - สำเร็จ])</code></pre>
+            </div>
+        </div>
+        <div id="steps">
+            <h2>3. ขั้นตอนการประมวลผลอย่างละเอียด (Detailed Processing Steps)</h2>
+<div class="card">
+    <h3>ฟังก์ชันควบคุมหลัก: of_rcvprocess_post</h3>
+    <p>ฟังก์ชันหลักที่เป็นจุดเริ่มต้นการประมวลผลตัดยอดเรียกเก็บ ดึงพารามิเตอร์ XML ตั้งค่าตัวแปรประจำงวด (is_recvperiod) และควบคุมลำดับขั้นตอนฟังก์ชันย่อยทั้งหมดสำเร็จเสร็จสิ้นใน Transaction เดียวกัน</p>
+    <details>
+        <summary>คลิกเพื่อขยายซอร์สโค้ดของฟังก์ชัน of_rcvprocess_post</summary>
+        <div style="padding: 1rem;">
+            <div class="code-container">
+                <div class="code-header">
+                    <span>PowerBuilder Source: of_rcvprocess_post</span>
+                    <button class="btn-toggle" onclick="toggleCode(this)">ขยายโค้ด</button>
+                </div>
+                <pre><code>public function integer of_rcvprocess_post ();/***********************************************************
+&lt;description&gt;
+	ประมวลผ่านรายการเรียกเก็บ
+&lt;/description&gt;
+
+&lt;arguments&gt;  
+	astr_keep.xml_option			String			dw เงื่อนไขการประมวผล
+&lt;/arguments&gt; 
+
+&lt;return&gt; 
+	Integer	1 = success,  throwable = failure
+&lt;/return&gt; 
+
+&lt;usage&gt; 
+	
+	Revision History:
+	Version 1.0 (Initial version) Modified Date 28/9/2010 by MiT
+	Version 1.1 (Initial version) Modified Date 9/5/2012 by Godji
+&lt;/usage&gt; 
+***********************************************************/
+string		ls_group, ls_memno , ls_memtyp , ls_xmloption, ls_number
+integer	li_rowcount
+integer	li_maxproc, li_count, li_countadj
+integer	li_year, li_month, li_sharestatus, li_loanstatus, li_ffeestatus, li_depositstatus, li_deptautocut, li_loanemerkep
+integer	li_chkbaldept , li_moneyretstatus, li_otherstatus, li_insurestatus, li_chkdebtagflag
+string 	ls_mbtype, ls_mbgrp, ls_mbaggrp, ls_rank
+n_ds		lds_procdata
+n_cst_dwxmlieservice		lnv_dwxmliesrv
+
+lds_procdata = create n_ds
+lds_procdata.dataobject = &quot;d_kp_option_post&quot;
+lds_procdata.settransobject( sqlca )
+
+ls_xmloption		= istr_process.arg1
+
+// นำเข้า XML
+try
+	if lnv_dwxmliesrv.of_xmlimport( lds_procdata, ls_xmloption ) &lt; 1 then
+		iex_exception.text += &quot;~r~nพบขอผิดพลาดในการนำเข้าเงื่อนไขการประมวลผลตัดยอดเรียกเก็บ&quot;
+		iex_exception.text += &quot;~r~nกรุณาตรวจสอบ&quot;
+	end if
+catch ( exception iex_exception)
+end try
+
+li_year					= lds_procdata.getitemnumber( 1, &quot;receive_year&quot; )
+li_month					= lds_procdata.getitemnumber( 1, &quot;receive_month&quot; )
+ls_number				= trim( lds_procdata.getitemstring( 1, &quot;receive_number&quot;) )
+idtm_receiptdate		= lds_procdata.getitemdatetime( 1, &quot;receipt_date&quot; )
+idtm_operate			= lds_procdata.getitemdatetime( 1, &quot;operate_date&quot; )
+is_keeporg				= trim( lds_procdata.getitemstring( 1, &quot;keeporg_code&quot;) ) //วิธีการส่งหัก
+li_ffeestatus				= ids_kpconstant.object.firstfee_flag[1] 
+li_sharestatus			= ids_kpconstant.object.sharekep_flag[1] 
+li_loanstatus				= ids_kpconstant.object.loankep_flag[1] 
+//li_emertrnstatus		= lds_procdata.getitemnumber( 1, &quot;emertrn_status&quot; )
+li_deptautocut			= ids_kpconstant.object.deptautocut_flag[1] 
+li_depositstatus			= ids_kpconstant.object.deptkep_flag[1] 
+li_insurestatus			= ids_kpconstant.object.insurekep_flag[1] 
+li_otherstatus			= ids_kpconstant.object.othkep_flag[1] 
+li_moneyretstatus		= ids_kpconstant.object.moneyret_flag[1] 
+ii_cntkepintday			= ids_kpconstant.object.cntkepintday_status[1]		//สถานะการนับวันที่คิดอกเบี้ยเรียกเก็บ
+li_chkdebtagflag		= ids_kpconstant.object.chkdebtag_flag[1]			//สถานะตรวจสอบลูกหนี้ตัวแทน
+ii_mnenoughflg			= ids_kpconstant.object.adjintarrauto_flag[1]		// ปรับปรุงเรียกเก็บพร้อมตั้งค้างอัตโนมัติ
+ii_postrealdateflag		= ids_kpconstant.object.postrealdate_flag[1]		//สถานะตัดยอดตามวันที่รับเงินจริง
+ii_postrealpayflag 		= ids_kpconstant.object.postrealpay_flag[1]			//สถานะตัดยอดตามเงินที่เก็บได้จริง
+
+//========&gt;EGAT -&gt; ดึงรายการตัดยอดกลุ่มฉุกเฉิน
+if is_coopcontrol = &#39;065001&#39; then 
+	li_loanemerkep		= ids_kpconstant.object.loanemerkep_flag[1] 
+end if
+
+if isnull( li_loanemerkep ) then li_loanemerkep = 0
+if isnull( li_countadj ) then li_countadj = 0
+
+//สถานะตัดบัญชีเงินฝากอัตโนมัติ
+if li_deptautocut = 0 then li_depositstatus = 0
+if li_deptautocut = 1 then ii_chkbaldept = 1 else ii_chkbaldept = 0
+
+ls_mbtype			= lds_procdata.getitemstring( 1, &quot;memtype_text&quot; )
+ls_mbgrp				= lds_procdata.getitemstring( 1, &quot;mbgrp_text&quot; )
+ls_mbaggrp			= lds_procdata.getitemstring( 1, &quot;agen_text&quot; )
+ls_memno			= lds_procdata.getitemstring( 1, &quot;mem_text&quot; )
+
+
+// กำหนดค่าให้ instance เพื่อใช้ในฟังก์ชันอื่น ๆ
+is_userid				= lds_procdata.getitemstring( 1, &quot;entry_id&quot; )
+ii_proctype			= lds_procdata.getitemnumber( 1, &quot;proc_type&quot; )
+
+ls_number	= right( &quot;00&quot;+ls_number, 2 )
+if ls_number = &quot;00&quot; then
+	ls_number = &quot;&quot;
+end if
+if isnull( ls_number ) then ls_number = &quot;&quot; 
+is_recvperiod		= string( li_year ) + string( li_month, &quot;00&quot; ) 
+is_recvperiod		= trim( is_recvperiod )
+
+//// รูปแบบการประมวลผล
+choose case ii_proctype
+	case 2	// ตามกลุ่ม
+		ls_rank	= ls_mbgrp
+	case 3	// ตามทะเบียน
+		ls_rank	= ls_memno
+	case 4	// ตามประเภทสมาชิก
+		ls_rank	= ls_mbtype
+	case 5	// ตามลูกหนี้ตัวแทน
+		ls_rank	= ls_mbaggrp
+end choose
+
+inv_kpsrv.of_setproctype( ii_proctype )
+inv_kpsrv.of_set_recvperiod( is_recvperiod )
+inv_kpsrv.of_set_txtmemno( ls_memno )
+inv_kpsrv.of_set_txtmemgrp( ls_mbgrp )
+inv_kpsrv.of_set_txtmemtyp( ls_mbtype )
+inv_kpsrv.of_set_txtmemagen( ls_mbaggrp )
+
+try
+	inv_kpsrv.of_setanalyze()
+catch ( exception lex_errimpanalyze )
+end try
+
+if ii_mnenoughflg = 1 then li_countadj = 2
+li_maxproc   = li_sharestatus + li_loanstatus + li_ffeestatus + li_otherstatus + li_insurestatus + li_moneyretstatus + li_countadj + 3
+
+try
+	
+	//CARETE HEADER KPMAST STEP : สร้างใบเสร็จสมาชิกที่ประมวลผลตัดยอด
+	li_count ++
+	//=======&gt;Update last statement no ใหม่
+	if this.of_post_toupseqno() &lt;&gt; 1 then
+		if isvalid( lds_procdata ) then destroy lds_procdata ;
+		rollback using sqlca ;
+	end if
+	//=======&gt;
+	if this.of_post_tomast() &lt;&gt; 1 then
+		if isvalid( lds_procdata ) then destroy lds_procdata ;
+		rollback using sqlca ;
+	end if
+	
+	//FEE POST STEP : ผ่านรายการค่าธรรมเนียมแรกเข้า
+	if ( li_ffeestatus = 1 ) then
+		li_count ++
+		this.of_pgstep( li_count, li_maxproc)
+		if this.of_post_toffee( ) &lt;&gt; 1 then
+			if isvalid( lds_procdata ) then destroy lds_procdata ;
+			rollback using sqlca ;
+		end if		
+	end if
+	
+	//SHARE POST STEP : ผ่านรายการค่าหุ้นรายเดือน
+	if li_sharestatus = 1 then
+		li_count ++
+		this.of_pgstep( li_count, li_maxproc)
+		if this.of_post_toshare( ) &lt;&gt; 1 then
+			if isvalid( lds_procdata ) then destroy lds_procdata ;
+			rollback using sqlca ;
+		end if	
+	end if
+	
+	//LOAN POST STEP : ผ่านรายการหนี้รายเดือนเรียกเก็บ
+	if li_loanstatus = 1 then
+		li_count ++
+		this.of_pgstep( li_count, li_maxproc)
+	//	if this.of_post_toloanintarr(  ) &lt;&gt; 1 then
+	//		if isvalid( lds_procdata ) then destroy lds_procdata ;
+	//		rollback using sqlca ;
+	//	end if
+		
+		if is_coopcontrol = &#39;065001&#39; then
+			if this.of_post_toloan_egat( ) &lt;&gt; 1 then
+					if isvalid( lds_procdata ) then destroy lds_procdata ;
+					rollback using sqlca ;
+			end if	
+		else
+			if this.of_post_toloan( ) &lt;&gt; 1 then
+				if isvalid( lds_procdata ) then destroy lds_procdata ;
+				rollback using sqlca ;
+			end if		
+		end if
+	end if
+	
+	//========&gt;EGAT -&gt;แยกตัดกลุ่มเงินกู้ปกติ กับ กลุ่มฉุกเฉิน
+	if li_loanemerkep = 1 and is_coopcontrol = &#39;065001&#39; then
+		li_count ++
+		this.of_pgstep( li_count, li_maxproc)
+		if this.of_post_toloan_egat( ) &lt;&gt; 1 then
+			if isvalid( lds_procdata ) then destroy lds_procdata ;
+			rollback using sqlca ;
+		end if	
+	end if
+	
+	//&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;.........ฉุกเฉินหักโอน
+	//if li_emertrnstatus = 1 then
+	//	li_count ++
+	//	inv_progress.istr_progress.progress_index = li_count	
+	//	if this.of_postloanemertrn(  ) &lt;&gt; 1 then
+	//		rollback using sqlca ;
+	//		throw ithw_exception
+	//	end if
+	//end if
+	
+	//INSURANCE POST STEP : ผ่านรายการเบี้ยประกันรายเดือน
+	if li_insurestatus = 1 then
+		li_count ++
+		this.of_pgstep( li_count, li_maxproc)	
+		
+		if this.of_post_toinsure( ) &lt;&gt; 1 then
+			if isvalid( lds_procdata ) then destroy lds_procdata ;
+			rollback using sqlca ;
+		end if		
+	end if
+	
+	//KPRCVKEEPOTHER POST STEP : ผ่านรายการชำระอื่น ๆ รายเดือน
+	if li_otherstatus = 1 then
+		li_count ++
+		this.of_pgstep( li_count, li_maxproc)
+		
+		if this.of_post_toother(  ) &lt;&gt; 1 then
+			if isvalid( lds_procdata ) then destroy lds_procdata ;
+			rollback using sqlca ;
+		end if		
+	end if
+	
+	//MONEYRETURN POST STEP : ผ่านรายการเงินคืนในใบเรียกเก็บ
+	if li_moneyretstatus = 1 then
+		li_count ++
+		this.of_pgstep( li_count, li_maxproc)		
+		if this.of_postmoneyreturn( ) &lt;&gt; 1 then
+			if isvalid( lds_procdata ) then destroy lds_procdata ;
+			rollback using sqlca ;
+		end if		
+	end if
+	
+	//DISPLAY POST STEP : รายการหยุดเก็บที่แสดงผลเฉยๆ
+	li_count ++
+	this.of_pgstep( li_count, li_maxproc)	
+	if this.of_post_todisplay() &lt;&gt; 1 then
+		if isvalid( lds_procdata ) then destroy lds_procdata ;
+		rollback using sqlca ;
+	end if
+	
+	//DEPOSIT POST STEP : ผ่านรายการเงินฝากประจำเดือน
+	if li_depositstatus = 1 then
+		li_count ++
+		this.of_pgstep( li_count, li_maxproc)
+		if this.of_post_todetpmthcut() &lt;&gt; 1 then
+			if isvalid( lds_procdata ) then destroy lds_procdata ;
+			rollback using sqlca ;
+		end if		
+	end if
+
+	li_count ++
+	this.of_pgstep( li_count, li_maxproc)
+	//DELETE STEP : ลบข้อมูลที่รอผ่านรายการ
+	if this.of_del_mast() &lt;&gt; 1 then
+		if isvalid( lds_procdata ) then destroy lds_procdata ;
+		rollback using sqlca ;
+	end if
+	commit using sqlca ;
+	
+	//EXPENSE POST STEP : UPDATE สถานะการหักเงิน
+	li_count ++
+	this.of_pgstep( li_count, li_maxproc)
+//	if this.of_update_expense() &lt;&gt; 1 then
+//		if isvalid( lds_procdata ) then destroy lds_procdata ;
+//		rollback using sqlca ;
+//	end if
+
+	//CANCEL STEP : Auto Adjust to Slipadjust โดยทำการปรับปรุงยอดโดยดูจากฟิว realitem_payment, adjust_itemamt
+	/*กรณีที่ทำเงื่อนไขนี้ได้จะต้องทำการกรอกข้อมูล หรือยอดที่เก็บได้จริงก่อนจะทำการประมวลผลเท่านั้นถึงจะทำการใช้เงื่อนไขนี้ได้*/
+	if ii_mnenoughflg = 1 then 
+		
+		li_count ++
+		this.of_pgstep( li_count, li_maxproc )
+		//ALL CENCEL STEP : can&#39;t payment all &gt;&gt;&gt; ยกเลิกรายการทั้งหมดที่เรียกเก็บไม่ได้
+		if this.of_post_tocancelall() &lt;&gt; 1 then
+			if isvalid( lds_procdata ) then destroy lds_procdata ;
+			rollback using sqlca ;
+		end if
+		
+		li_count ++
+		this.of_pgstep( li_count, li_maxproc )
+		//ALL CENCEL STEP : can partial payment &gt;&gt;&gt; ยกเลิกรายการบางส่วนที่เก็บเงินไม่ได้ ตามเงื่อนไขลำดับการตัดยอด
+		if is_coopcontrol = &#39;077001&#39; then
+			if this.of_post_tocancelpartial_aero() &lt;&gt; 1 then
+				if isvalid( lds_procdata ) then destroy lds_procdata ;
+				rollback using sqlca ;
+			end if
+		else 
+			if this.of_post_tocancelpartial() &lt;&gt; 1 then
+				if isvalid( lds_procdata ) then destroy lds_procdata ;
+				rollback using sqlca ;
+			end if
+		end if
+	end if
+	
+	//MONEY RETURN STEMP : ทำการตั้งเงินรอจ่ายคืน กรณีทำรายการแบบโดยวิธีการรับเงินจากลูกหนี้ตัวแทนเท่านั้น
+	if li_chkdebtagflag = 1 then 
+		li_count ++
+		this.of_pgstep( li_count, li_maxproc )
+		
+	end if 
+
+	commit using sqlca ;
+
+	this.of_pgstep( li_maxproc, li_maxproc)
+	if isvalid( lds_procdata ) then destroy lds_procdata ;
+	this.of_pgfinish( )
+
+catch ( exception iex_exception2 )
+	this.of_pgerror( iex_exception2.text )
+	destroy lds_procdata ;
+	rollback using sqlca ;
+end try
+
+
+return 1
+end function</code></pre>
+            </div>
+        </div>
+    </details>
+</div>
+<div class="card">
+    <h3>ขั้นตอนที่ 1: ตรวจสอบและตั้งค่าเงื่อนไขการประมวลผล (Initialization)</h3>
+    <p>ระบบจะเริ่มต้นโดยโหลดข้อมูลเงื่อนไขในการประมวลผลเรียกเก็บจากพารามิเตอร์ XML (istr_process.arg1) เข้ามาที่ Datastore d_kp_option_post ดึงข้อมูลสำคัญ เช่น ปี/เดือนที่เรียกเก็บ วันที่ใบเสร็จ วันประมวลผลตัดยอด และประเภทการประมวลผล จากนั้นดึงค่าคงที่ระบบเรียกเก็บ (ids_kpconstant) เพื่อโหลดแฟล็กเปิด/ปิดการทำงานต่างๆ</p>
+    <details>
+        <summary>คลิกเพื่อขยายซอร์สโค้ดของฟังก์ชัน of_initservice</summary>
+        <div style="padding: 1rem;">
+            <div class="code-container">
+                <div class="code-header">
+                    <span>PowerBuilder Source: of_initservice</span>
+                    <button class="btn-toggle" onclick="toggleCode(this)">ขยายโค้ด</button>
+                </div>
+                <pre><code>public function integer of_initservice ();/***********************************************************
+&lt;description&gt;
+	ใช้สำหรับ Intial service
+&lt;/description&gt;
+
+&lt;arguments&gt;  
+	atr_dbtrans			n_cst_dbconnectservice	รายละเอียดการเชื่อมต่อฐานข้อมูล
+&lt;/arguments&gt; 
+
+&lt;return&gt; 
+	Integer				1 = success
+&lt;/return&gt; 
+
+&lt;usage&gt; 
+	เรียกใช้ครั้งเดียว และต้องเรียกใช้เป็นฟังก์ชั่นแรกหลังจาก create instance
+	ก่อนที่จะเรียกใช้ฟังก์ชั่นอื่น ๆ
+	
+	Revision History:
+	Version 1.0 (Initial version) Modified Date 28/9/2010 by MiT
+&lt;/usage&gt; 
+***********************************************************/
+
+is_coopcontrol	= istr_process.coop_control
+is_coopid = istr_process.coop_id
+
+//Service สำหรับการประมวลผล
+try
+	inv_kpsrv			= create n_cst_keeping_service
+	inv_kpsrv.of_initservice( is_coopcontrol, is_coopid )
+catch ( throwable ithw_exception )
+end try
+
+// ค่าคงที่ระบบจัดเก็บ
+ids_kpconstant = create n_ds
+if is_coopcontrol = &#39;065001&#39; then
+	ids_kpconstant.dataobject	= &quot;d_kp_constant_egat&quot;
+else
+	ids_kpconstant.dataobject	= &quot;d_kp_constant&quot;
+end if
+ids_kpconstant.settransobject( sqlca )
+ids_kpconstant.retrieve(is_coopcontrol)
+
+try
+	inv_deptsrv			= create n_cst_proc_deposit
+	inv_deptsrv.of_init_coopid( is_coopcontrol )
+catch ( throwable ithw_exception1 )
+end try
+
+return 1
+end function</code></pre>
+            </div>
+        </div>
+    </details>
+</div>
+<div class="card">
+    <h3>ขั้นตอนที่ 2: อัปเดต Sequence ล่าสุดในตาราง Master</h3>
+    <p>ก่อนเริ่มเขียนตารางประวัติธุรกรรม (Statement) ระบบจะอัปเดตข้อมูลลำดับรายการล่าสุด (last_stm_no) ในตาราง Master ทั้ง lncontmaster และ shsharemaster โดยดึงค่าสูงสุดจากตารางประวัติการทำรายการเพื่อป้องกันการเขียนข้อมูลซ้ำซ้อนหรือเลข Sequence ชนกัน</p>
+    <details>
+        <summary>คลิกเพื่อขยายซอร์สโค้ดของฟังก์ชัน of_post_toupseqno</summary>
+        <div style="padding: 1rem;">
+            <div class="code-container">
+                <div class="code-header">
+                    <span>PowerBuilder Source: of_post_toupseqno</span>
+                    <button class="btn-toggle" onclick="toggleCode(this)">ขยายโค้ด</button>
+                </div>
+                <pre><code>public function integer of_post_toupseqno ();/***********************************************************
+&lt;description&gt;
+	อัปเดตลำดับรายการใหม่ในตาราง master แต่ละทะเบียน
+&lt;/description&gt;
+***********************************************************/
+choose case is_dbtype
+	case &#39;1&#39; /*Oracle*/
+		//=======&gt;update lncontmaster
+		update lncontmaster lm 
+		set lm.last_stm_no = (select ls.seq_no from (select coop_id, loancontract_no, max(seq_no) as seq_no from lncontstatement group by coop_id, loancontract_no) ls
+										where lm.coop_id = ls.coop_id and lm.loancontract_no = ls.loancontract_no ) 
+		where lm.loancontract_no in (select lm.loancontract_no from lncontmaster lm 
+												join (select coop_id, loancontract_no, max(seq_no) as seq_no from lncontstatement group by coop_id, loancontract_no) ls on lm.coop_id = ls.coop_id and lm.loancontract_no = ls.loancontract_no
+											where lm.last_stm_no &lt;&gt; ls.seq_no) 
+		using sqlca;
+		if sqlca.sqlcode &lt;&gt; 0 then
+			this.of_pgerror( &quot;อัปเดต last_stm_no (lncontmaster) พบข้อผิดพลาด&quot; + sqlca.sqlerrtext);
+			return -1
+		end if
+		
+		//=======&gt;update shsharemaster
+		update shsharemaster sm 
+		set sm.last_stm_no = (select ss.seq_no from (select coop_id, member_no, max(seq_no) as seq_no from shsharestatement group by coop_id, member_no) ss
+										where sm.coop_id = ss.coop_id and sm.member_no = ss.member_no ) 
+		where sm.member_no in (select sm.member_no from shsharemaster sm
+												join (select coop_id, member_no, max(seq_no) as seq_no from shsharestatement group by coop_id, member_no) ss on sm.coop_id = ss.coop_id and sm.member_no = ss.member_no
+											where sm.last_stm_no &lt;&gt; ss.seq_no) 
+		using sqlca;
+		if sqlca.sqlcode &lt;&gt; 0 then
+			this.of_pgerror( &quot;อัปเดต last_stm_no (shsharemaster) พบข้อผิดพลาด&quot; + sqlca.sqlerrtext);
+			return -1
+		end if
+		
+	case &#39;2&#39; /*SqlServer*/
+		
+		//=======&gt;update lncontmaster
+		update lm
+		set lm.last_stm_no = ls.seq_no
+		from lncontmaster lm 
+			join (select coop_id, loancontract_no, max(seq_no) as seq_no from lncontstatement group by coop_id, loancontract_no) ls on lm.coop_id = ls.coop_id and lm.loancontract_no = ls.loancontract_no
+		where lm.last_stm_no &lt;&gt; ls.seq_no
+		using sqlca;
+		if sqlca.sqlcode &lt;&gt; 0 then
+			this.of_pgerror( &quot;อัปเดต last_stm_no (lncontmaster) พบข้อผิดพลาด&quot; + sqlca.sqlerrtext);
+			return -1
+		end if
+		
+		//=======&gt;update shsharemaster
+		update sm
+		set sm.last_stm_no = ss.seq_no
+		from shsharemaster sm 
+			join (select coop_id, member_no, max(seq_no) as seq_no from shsharestatement group by coop_id, member_no) ss on sm.coop_id = ss.coop_id and sm.member_no = ss.member_no
+		where sm.last_stm_no &lt;&gt; ss.seq_no
+		using sqlca;
+		if sqlca.sqlcode &lt;&gt; 0 then
+			this.of_pgerror( &quot;อัปเดต last_stm_no (shsharemaster) พบข้อผิดพลาด&quot; + sqlca.sqlerrtext);
+			return -1
+		end if
+	
+end choose
+
+return 1
+end function</code></pre>
+            </div>
+        </div>
+    </details>
+</div>
+<div class="card">
+    <h3>ขั้นตอนที่ 3: สร้างหัวใบเสร็จเรียกเก็บหลัก (of_post_tomast)</h3>
+    <p>ระบบจะทำการโอนย้ายข้อมูลหัวใบเสร็จรับเงินจากตารางพักชั่วคราว kptempreceive ไปสร้างในตารางใบเสร็จหลักของสหกรณ์ kpmastreceive เฉพาะใบเสร็จในงวดปัจจุบันที่ยังไม่เคยมีการประมวลผลเข้ามาในระบบ</p>
+    <details>
+        <summary>คลิกเพื่อขยายซอร์สโค้ดของฟังก์ชัน of_post_tomast</summary>
+        <div style="padding: 1rem;">
+            <div class="code-container">
+                <div class="code-header">
+                    <span>PowerBuilder Source: of_post_tomast</span>
+                    <button class="btn-toggle" onclick="toggleCode(this)">ขยายโค้ด</button>
+                </div>
+                <pre><code>protected function integer of_post_tomast ();/***********************************************************
+&lt;description&gt;
+	ประมวลผ่านรายการหัวใบเสร็จไปที่ kpmastreceive เฉพาะพวกที่ทำรายการ
+&lt;/description&gt;
+
+&lt;arguments&gt;  
+
+&lt;/arguments&gt; 
+
+&lt;return&gt; 
+	Integer	1 = success,  throwable = failure
+&lt;/return&gt; 
+
+&lt;usage&gt; 
+	
+	Revision History:
+	Version 1.0 (Initial version) Modified Date 09/05/2012 by Godji
+&lt;/usage&gt; 
+***********************************************************/
+string ls_sql , ls_sqlext 
+datetime ldtm_entrydate
+ldtm_entrydate			= datetime( today(), now() )
+this.of_pgmessage( &quot;กำลังทำรายการ...สร้างใบเสร็จรับเงิน&quot; )
+
+if  SQLCA.DBMS = &quot;ADO.Net&quot; then
+	ls_sql		= &quot;insert into kpmastreceive&quot;
+	ls_sql		+= &quot; ( 	coop_id , 			kpslip_no , 				memcoop_id,			member_no , 			recv_period , &quot;
+	ls_sql		+= &quot; 		membtype_code , department_code , 	membgroup_code , 	process_date , &quot; 
+	ls_sql		+= &quot; 		receipt_no , 		receipt_date , 			operate_date , 			sharestkbf_value , 	sharestk_value , 	interest_accum , &quot;
+	ls_sql		+= &quot; 		keeping_status , 	receive_amt , 			money_text ) &quot;
+	ls_sql		+= &quot; select &quot;
+	ls_sql		+= &quot; 		coop_id , 			kpslip_no , 				memcoop_id,			member_no , 			recv_period , &quot;
+	ls_sql		+= &quot; 		membtype_code , 	department_code , 	membgroup_code , 	GETDATE() , 	&quot;
+	ls_sql		+= &quot; 		receipt_no , 		receipt_date , 			operate_date , 			sharestkbf_value , 	sharestk_value , 	interest_accum , &quot;
+	ls_sql		+= &quot; 		keeping_status ,	receive_amt , 			money_text  &quot;
+	ls_sql		+= &quot; from kptempreceive , (	select 	coop_id as tp_coop, kpslip_no as tp_kpslip &quot;
+	ls_sql		+= &quot; 								from 		kptempreceive &quot;
+	ls_sql		+= &quot; 								where 	coop_id = &#39;&quot; + is_coopid + &quot;&#39;&quot;
+	ls_sql		+= &quot; 								and 		recv_period = &#39;&quot; + is_recvperiod + &quot;&#39;&quot;
+	ls_sql		+= &quot; 								except &quot;
+	ls_sql		+= &quot; 								select 	coop_id as tp_coop, kpslip_no as tp_kpslip &quot;
+	ls_sql		+= &quot; 								from 		kpmastreceive &quot;
+	ls_sql		+= &quot; 								where 	coop_id = &#39;&quot; + is_coopid + &quot;&#39;&quot;
+	ls_sql		+= &quot; 								and 		recv_period = &#39;&quot; + is_recvperiod + &quot;&#39;&quot;
+	ls_sql		+= &quot; 								) tp &quot;
+	ls_sql		+= &quot; where coop_id = &#39;&quot; + is_coopid + &quot;&#39;&quot;
+	ls_sql		+= &quot; and recv_period = &#39;&quot; + is_recvperiod + &quot;&#39;&quot;
+	if is_coopid = &#39;056001&#39; then /*สอ.กรมทางหลวงตัดตามกลุ่มการหักเงิน*/
+		ls_sql		+= &quot; and keeporg_code = &#39;&quot; + is_keeporg + &quot;&#39;&quot;
+	end if
+	ls_sql		+= &quot; and coop_id = tp_coop &quot;
+	ls_sql		+= &quot; and kpslip_no = tp_kpslip &quot;
+	ls_sql		+= ls_sqlext
+else
+	//to_date(&#39;&quot; + string( ldtm_bal , &#39;dd/mm/yyyy&#39; ) + &quot;&#39;,&#39;dd/mm/yyyy&#39;) &quot;
+	ls_sql		= &quot;insert into kpmastreceive&quot;
+	ls_sql		+= &quot; ( 	coop_id , 			kpslip_no , 				memcoop_id,			member_no , 			recv_period , &quot;
+	ls_sql		+= &quot; 		membtype_code , department_code , 	membgroup_code , 	process_date , &quot; 
+	ls_sql		+= &quot; 		receipt_no , 		receipt_date , 			operate_date , 			sharestkbf_value , 	sharestk_value , 	interest_accum , &quot;
+	ls_sql		+= &quot; 		keeping_status , 	receive_amt , 			money_text ) &quot;
+	ls_sql		+= &quot; select &quot;
+	ls_sql		+= &quot; 		coop_id , 			kpslip_no , 				memcoop_id,			member_no , 			recv_period , &quot;
+	ls_sql		+= &quot; 		membtype_code , 	department_code , 	membgroup_code , 	sysdate , 	&quot;
+	ls_sql		+= &quot; 		receipt_no , 		receipt_date , 			to_date(&#39;&quot; + string( idtm_operate , &#39;dd/mm/yyyy&#39; ) + &quot;&#39;,&#39;dd/mm/yyyy&#39;) , 			sharestkbf_value , 	sharestk_value , 	interest_accum , &quot;
+	ls_sql		+= &quot; 		keeping_status ,	receive_amt , 			money_text  &quot;
+	ls_sql		+= &quot; from kptempreceive , (	select 	coop_id as tp_coop, kpslip_no as tp_kpslip &quot;
+	ls_sql		+= &quot; 								from 		kptempreceive &quot;
+	ls_sql		+= &quot; 								where 	coop_id = &#39;&quot; + is_coopid + &quot;&#39;&quot;
+	ls_sql		+= &quot; 								and 		recv_period = &#39;&quot; + is_recvperiod + &quot;&#39;&quot;
+	ls_sql		+= &quot; 								minus &quot;
+	ls_sql		+= &quot; 								select 	coop_id as tp_coop, kpslip_no as tp_kpslip &quot;
+	ls_sql		+= &quot; 								from 		kpmastreceive &quot;
+	ls_sql		+= &quot; 								where 	coop_id = &#39;&quot; + is_coopid + &quot;&#39;&quot;
+	ls_sql		+= &quot; 								and 		recv_period = &#39;&quot; + is_recvperiod + &quot;&#39;&quot;
+	ls_sql		+= &quot; 								) tp &quot;
+	ls_sql		+= &quot; where coop_id = &#39;&quot; + is_coopid + &quot;&#39;&quot;
+	ls_sql		+= &quot; and recv_period = &#39;&quot; + is_recvperiod + &quot;&#39;&quot;
+	if is_coopid = &#39;056001&#39; then /*สอ.กรมทางหลวงตัดตามกลุ่มการหักเงิน*/
+		ls_sql		+= &quot; and keeporg_code = &#39;&quot; + is_keeporg + &quot;&#39;&quot;
+	end if
+	ls_sql		+= &quot; and coop_id = tp_coop &quot;
+	ls_sql		+= &quot; and kpslip_no = tp_kpslip &quot;
+	ls_sql		+= ls_sqlext
+end if
+
+execute immediate :ls_sql using sqlca ;
+
+if sqlca.sqlcode &lt;&gt; 0 then
+	this.of_pgerror( &quot;สร้างใบเสร็จเรียกเก็บประจำเดือน(Kpmastreceive) พบข้อผิดพลาด กรุณาตรวจสอบ &quot; + sqlca.sqlerrtext )
+	return -1
+end if
+
+return 1
+end function</code></pre>
+            </div>
+        </div>
+    </details>
+</div>
+<div class="card">
+    <h3>ขั้นตอนที่ 4: ผ่านรายการค่าธรรมเนียมแรกเข้า (of_post_tofee)</h3>
+    <p>ดึงรายการค่าธรรมเนียมแรกเข้าจาก Datastore d_kp_rcvpost_ffee เข้าสู่ตารางรายละเอียดใบเสร็จจริง kpmastreceivedet และหากชำระครบและสถานะรายการปกติ จะทำรายการปรับปรุงฟิลด์ firstfee_status = 1 ในตารางหลักของสมาชิก mbmembmaster</p>
+    <details>
+        <summary>คลิกเพื่อขยายซอร์สโค้ดของฟังก์ชัน of_post_tofee</summary>
+        <div style="padding: 1rem;">
+            <div class="code-container">
+                <div class="code-header">
+                    <span>PowerBuilder Source: of_post_tofee</span>
+                    <button class="btn-toggle" onclick="toggleCode(this)">ขยายโค้ด</button>
+                </div>
+                <pre><code>// Source code not found in SRU file.</code></pre>
+            </div>
+        </div>
+    </details>
+</div>
+<div class="card">
+    <h3>ขั้นตอนที่ 5: ผ่านรายการหุ้นรายเดือน (of_post_toshare)</h3>
+    <p>ดึงข้อมูลการส่งหักหุ้นจากตารางพัก ประมวลผลจำนวนหน่วยหุ้นที่สมาชิกชำระ โดยอัปเดตสะสมทุนเรือนหุ้นและงวดการชำระในตาราง shsharemaster บันทึกประวัติรายการประเภท SPM ในตาราง shsharestatement และหากสมาชิกถูกปรับปรุงถอน/ลาออก แต่ชำระยอดเข้ามา ระบบจะโอนยอดชำระนั้นไปตั้งเป็นเงินรอจ่ายคืนแก่สมาชิกในตาราง mbmembmoneyreturn โดยอัตโนมัติ</p>
+    <details>
+        <summary>คลิกเพื่อขยายซอร์สโค้ดของฟังก์ชัน of_post_toshare</summary>
+        <div style="padding: 1rem;">
+            <div class="code-container">
+                <div class="code-header">
+                    <span>PowerBuilder Source: of_post_toshare</span>
+                    <button class="btn-toggle" onclick="toggleCode(this)">ขยายโค้ด</button>
+                </div>
+                <pre><code>protected function integer of_post_toshare ();/***********************************************************
+&lt;description&gt;
+	ประมวลผ่านรายการหุ้น
+&lt;/description&gt;
+&lt;arguments&gt;&lt;/arguments&gt; 
+&lt;return&gt; 
+	Integer	1 = success,  throwable = failure
+&lt;/return&gt; 
+&lt;usage&gt;&lt;/usage&gt; 
+***********************************************************/
+string			ls_kpslipno , ls_memcoopid
+string			ls_memno, ls_refmemno, ls_memprior, ls_refprior, ls_receiptno, ls_primemno
+string			ls_shritem, ls_sharetype, ls_sqlext, ls_temp, ls_sqlexttemp
+integer		li_period, li_lastperiod, li_laststmno, li_seqno, li_stepvalue, li_chk, li_keepstatus, li_ret, li_upmembdateflag, li_sharestatus
+long			ll_index, ll_count
+dec{2}		ldc_shrperiodamt, ldc_shrarramt, ldc_shrperiodvalue, ldc_shrvalue, ldc_shrstkamt, ldc_chkshrpaymth, ldc_shrstkval
+dec{2}		ldc_bfshrarrpayamt, ldc_bfshrarramt, ldc_shrpayment, ldc_shrarrpay, ldc_shrperiodpay, ldc_shrpaymentamt
+dec{2} 		ldc_fwshrarramt, ldc_fwshrarrpayamt, ldc_realitempay, ldc_adjitempay, ldc_unitshare
+datetime		ldtm_receiptdate, ldtm_sharedate
+n_ds			lds_share
+
+datetime	ldtm_entrydate
+
+ldtm_entrydate	= datetime( today(), now() )
+li_upmembdateflag = ids_kpconstant.object.upmembdate_flag[1] 
+if isnull( li_upmembdateflag ) then li_upmembdateflag = 0 
+this.of_pgmessage( &quot;กำลังดึงข้อมูล...ค่าหุ้นรายเดือน&quot; )
+
+lds_share	= create n_ds
+
+choose case is_dbtype
+	case &#39;1&#39; /*Oracle*/
+		lds_share.dataobject	= &quot;d_kp_rcvpost_share&quot;
+	
+	case &#39;2&#39; /*SqlServer*/
+	lds_share.dataobject	= &quot;d_kp_rcvpost_share_ole&quot;
+end choose
+
+lds_share.settransobject(sqlca)
+
+try
+	inv_kpsrv.of_setsqlselect( &quot;kptempreceive&quot; )
+	
+	if inv_kpsrv.of_setsqldw( lds_share ) &lt;&gt; 1 then
+		destroy lds_share
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL of_post_toshare(1)&quot;
+		return -1
+	end if
+	
+	if inv_kpsrv.of_setsqldw_coop_recvperiod( lds_share , &quot;kptempreceive&quot; ) &lt;&gt; 1 then
+		destroy lds_share
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL of_post_toshare(2)&quot;
+		return -1
+	end if
+catch ( throwable lthw_error )
+end try
+
+if ii_chkbaldept = 1 then
+	if this.of_set_sql_chkdpbal( lds_share , &quot;kptempreceive&quot; ) &lt;&gt; 1 then
+		destroy lds_share
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL ตรวจสอบเงินฝากคงเหลือ of_post_toshare(3)&quot;
+		return -1
+	end if
+end if
+
+if is_coopid = &#39;056001&#39; then /*สอ.กรมทางหลวงตัดตามกลุ่มการหักเงิน*/
+	ls_temp	= lds_share.getsqlselect()
+	ls_sqlext = &quot; and ( kptempreceive.keeporg_code = &#39;&quot; + is_keeporg + &quot;&#39; ) &quot;
+	ls_temp	= ls_temp + ls_sqlext
+	lds_share.setsqlselect( ls_temp )
+	lds_share.settransobject( sqlca )
+end if
+
+lds_share.retrieve()
+ll_count = lds_share.rowcount()
+
+ls_primemno = &quot;00000&quot;
+for ll_index = 1 to ll_count
+	
+	// ตรวจสอบการสั่งหยุดทำงาน
+	if mod( ll_index, 100 ) = 0 then
+		if this.of_pgisstop() then
+			this.of_pgmessage( &quot;หยุดจากทำงานจากผู้ใช้ ค่าหุ้นรายเดือน&quot; )
+			destroy lds_share
+			return 0
+		end if
+	end if
+	
+	ls_kpslipno				= trim( lds_share.object.kpslip_no[ll_index] )
+	ls_memcoopid			= trim( lds_share.object.memcoop_id[ll_index] )
+	ls_memno				= trim( lds_share.getitemstring( ll_index, &quot;member_no&quot; ) )
+	ls_receiptno				= trim( lds_share.getitemstring( ll_index, &quot;receipt_no&quot; ) )
+	ls_sharetype			= trim( lds_share.getitemstring( ll_index, &quot;shrlontype_code&quot; ) )
+	li_seqno					= lds_share.getitemnumber( ll_index, &quot;seq_no&quot; )
+	li_period					= lds_share.getitemnumber( ll_index, &quot;period&quot; )
+	li_lastperiod				= lds_share.getitemnumber( ll_index, &quot;last_period&quot; )
+	li_keepstatus			= lds_share.getitemnumber( ll_index, &quot;keepitem_status&quot; )
+	ldc_shrpayment		= lds_share.getitemdecimal( ll_index, &quot;item_payment&quot; )			//หุ้นที่เรียกเก็บ
+	ldc_shrvalue				= lds_share.getitemdecimal( ll_index, &quot;unitshare_value&quot; )
+	ldtm_receiptdate		= lds_share.getitemdatetime( ll_index, &quot;receipt_date&quot; )
+	ldc_bfshrarrpayamt	= lds_share.getitemdecimal( ll_index, &quot;shrarrpayment_amt&quot; ) //หุ้นค้างชำระยกมา
+	ldc_bfshrarramt		= lds_share.getitemdecimal( ll_index, &quot;sharearrear_amt&quot; ) //มูลค่าหุ้นค้างชำระยกมา
+	ldc_shrarrpay			= lds_share.getitemdecimal( ll_index, &quot;bfprincipal_arrear&quot; ) //หุ้นค้างชำระส่งหักเรียกเก็บ
+	ldc_shrperiodpay		= lds_share.getitemdecimal( ll_index, &quot;principal_period&quot; ) //หุ้นรายเดือนส่งเรียกเก็บ
+	ldc_realitempay		= lds_share.getitemnumber( ll_index, &quot;realitem_payment&quot;)
+	ldc_adjitempay			= lds_share.getitemnumber( ll_index, &quot;adjust_itemamt&quot;)
+	li_sharestatus			= lds_share.getitemnumber( ll_index, &quot;sharemaster_status&quot;) 
+	ldc_unitshare			= lds_share.getitemnumber( ll_index, &quot;unitshare_value&quot;) //มูลค่าหุ้น
+	
+	if ls_memcoopid &lt;&gt; &#39;057001&#39; or ls_memcoopid &lt;&gt; &#39;017001&#39; then 
+		
+		ls_refmemno			= ls_memno //trim( lds_share.getitemstring( ll_index, &quot;ref_membno&quot; ) )
+		if ls_memno &lt;&gt;  ls_primemno then
+			ldc_shrstkamt		= lds_share.getitemdecimal( ll_index, &quot;sharestk_amt&quot; )
+			li_laststmno			= lds_share.getitemnumber( ll_index, &quot;last_stm_no&quot; )
+		end if
+		
+	else//by num ของ กรมส่งเสริม เอาสมาชิก ฝากหักมาตัดยอด
+		ls_memno			= trim( lds_share.getitemstring( ll_index, &quot;ref_membno&quot; ) )
+		if ls_memno &lt;&gt;  ls_primemno then
+			select 	sharestk_amt, 		last_stm_no
+			into		:ldc_shrstkamt,		:li_laststmno
+			from 		shsharemaster
+			where 	coop_id = :ls_memcoopid
+			and		member_no = :ls_memno
+			using 		sqlca ;
+		end if
+		
+	end if
+	
+	//มีเรียกเก็บหุ้นเพิ่มจากเงินกู้ ทำให้มีรายการหุ้น 2 บันทัด
+
+	ldc_fwshrarramt = 0
+	ldc_fwshrarrpayamt = 0
+	if isnull( ldc_shrstkamt ) then ldc_shrstkamt = 0
+	if isnull( li_lastperiod ) then li_lastperiod = 0
+	if isnull( li_laststmno ) then li_laststmno = 0
+	if isnull( ldc_chkshrpaymth ) then ldc_chkshrpaymth = 0
+	if isnull( ls_refmemno ) then ls_refmemno = ls_memno
+	
+	ldc_chkshrpaymth = ldc_shrarrpay + ldc_shrperiodpay
+
+	// กำหนดค่าต่าง ๆ
+	ls_shritem			= &quot;SPM&quot;
+	//--------- ตรวจสอบยอดส่งเรียกเก็บว่าทำการเก็บทั้งงวดทั้งค้าง หรือไม่ ? ---------//
+	if ldc_shrpayment = ldc_chkshrpaymth then  
+		
+		ldc_shrarramt				= ldc_shrarrpay / ldc_shrvalue	//หุ้นค้างส่งหัก
+		ldc_shrstkamt				+= ldc_shrarramt
+		ldc_shrperiodamt			= ldc_shrperiodpay / ldc_shrvalue //หุ้นรายเดือน
+		ldc_shrstkamt				+= ldc_shrperiodamt
+		ldc_shrpaymentamt		= ldc_shrpayment / ldc_shrvalue //จำนวนหุ้นเรียกเก็บ
+		//--------- ตรวจสอบ มีการชำระค้าง หรือไม่ ? ---------//
+		if ldc_shrarrpay &gt; 0 then
+			ldc_fwshrarramt		= ldc_bfshrarramt - ldc_shrarramt
+			ldc_fwshrarrpayamt	= ldc_bfshrarrpayamt - ldc_shrarrpay
+			
+		else
+			ldc_fwshrarramt		= 0
+			ldc_fwshrarrpayamt	= 0
+		end if
+	else
+		
+		ldc_shrperiodamt			= ldc_shrpayment / ldc_shrvalue //หุ้นรายเดือน
+		ldc_shrpaymentamt		= ldc_shrpayment / ldc_shrvalue //จำนวนหุ้นเรียกเก็บ
+		ldc_shrstkamt				+= ldc_shrperiodamt		
+		
+	end if
+	ldc_shrstkval = ldc_shrstkamt * ldc_unitshare //RemarkByCher.wait get share unit in sharetype //AERO แก้ไขใช้ unitshare_value 17/12/2568
+	
+	li_laststmno ++
+	if li_period &gt; li_lastperiod then li_lastperiod = li_period
+
+	// ผ่านรายการไป kpmastreceivedet
+	li_ret = this.of_post_tomastdet_shr( ls_kpslipno, li_seqno, ldtm_entrydate, ldc_shrstkval ) 
+	if ( li_ret &lt;&gt; 1 ) then
+		destroy lds_share
+		return -1
+	end if
+	
+	// ถ้าเป็นรายการยกเลิก/ ยอดเป็น 0 ข้ามทำอันต่อไป
+	if li_keepstatus &lt;&gt; 1 or ldc_shrpayment = 0 then
+		continue
+	end if
+	
+	this.of_pgmessage( string( ll_index , &quot;#,##0&quot; ) + &quot;/&quot; + string( ll_count , &quot;#,##0&quot; )  +&quot;. ทะเบียน &quot;+ls_memno+&quot; &gt; หุ้นรายเดือน &quot;+string(ldc_shrperiodamt,&quot;#,##0.00&quot;)+&quot; &gt; ทุนเรือนหุ้น &quot;+string(ldc_shrstkamt,&quot;#,##0.00&quot;) )
+	
+	//========&gt;***ควรทำเป็นค่าคงที่ ***กรณีสอ.ทางหลวงให้ยิงรายการปกติ
+	if is_coopid &lt;&gt; &#39;056001&#39; and li_sharestatus &lt;&gt; 1 then
+		//===============&gt;กรณีที่สถานะหุ้นถูกถอนลาออก นำเงินที่เก็บได้เข้าเงินรอจ่ายคืนไว้
+		if ldc_adjitempay = 0 then
+			int li_mrtlastseq
+			string ls_slipdesc
+			//==========&gt;ดึงลำดับรายการตารางเงินรอจ่ายคืน
+			select max(seq_no) 
+			into :li_mrtlastseq
+			from mbmembmoneyreturn 
+			where member_no = :ls_memno 
+			using sqlca;
+
+			if (sqlca.sqlcode &lt;&gt; 0) then
+				iex_exception.text += &quot;ไม่สามารถดึงลำดับได้ ~n&quot; + string(sqlca.sqlcode)+&quot;  &quot; + sqlca.sqlerrtext
+				destroy lds_share
+				rollback using sqlca;
+				return -1
+			end if
+			if isnull(li_mrtlastseq) then li_mrtlastseq = 0
+			li_mrtlastseq++
+			ls_slipdesc		= &quot;เงินรอจ่ายคืนเรีกเก็บค่าหุ้นสมาชิก&quot;
+		
+			//Insert mbmembmoneyreturn
+			insert into mbmembmoneyreturn 
+					(	coop_id,						member_no,		seq_no,				ref_slipno,		system_code,	ref_slipdate,				ref_docno,		description,		shrlontype_code,
+						returnitemtype_code,		return_amt,			return_balance,	return_status,	entry_id, 		entry_date ) 
+			values(	:ls_memcoopid,			:ls_memno,			:li_mrtlastseq,		:ls_kpslipno,		&#39;KEP&#39;,				:ldtm_receiptdate,		:ls_receiptno,	:ls_slipdesc,		:ls_sharetype,
+						&#39;RET&#39;,							:ldc_shrpayment,	:ldc_shrpayment,	8,					:is_userid,		:ldtm_entrydate )
+			using sqlca;
+			
+			if (sqlca.sqlcode &lt;&gt; 0) then
+				iex_exception.text += &quot;ไม่สามารถบันทึกรายการเงินรอจ่ายคืน ~n&quot; + string(sqlca.sqlcode)+&quot;  &quot; + sqlca.sqlerrtext
+				destroy lds_share
+				rollback using sqlca;
+				return -1
+			end if
+		end if
+		//===============&gt;End job กรณีที่สถานะหุ้นถูกถอนลาออก นำเงินที่เก็บได้เข้าเงินรอจ่ายคืนไว้
+	
+	else  
+		//===============&gt;กรณีที่สถานะหุ้นปกติ ให้ระบบชำระค่าหุ้นให้สมาชิกปกติ
+		//==========&gt;update sharemaster
+		update	shsharemaster
+		set			last_period				= :li_lastperiod,	
+					sharestk_amt			= :ldc_shrstkamt,
+					last_stm_no				= :li_laststmno,
+					rkeep_sharevalue		= 0,
+					lastkeeping_date		= :ldtm_receiptdate,
+					sharearrear_amt		= :ldc_fwshrarramt,
+					shrarrpayment_amt	= :ldc_fwshrarrpayamt,
+					sharestk_value			= :ldc_shrstkval
+		where	coop_id				= :ls_memcoopid
+		and		( member_no		= :ls_memno ) 
+		using sqlca ;
+				
+		if ( sqlca.sqlcode &lt;&gt; 0 ) then
+			iex_exception.text += &quot;~r~nพบข้อผิดพลาดในการปรับปรุงทุนเรือนหุ้นสมาชิก&quot;
+			iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+			iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+			iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+			destroy lds_share
+			return -1
+		end if
+		
+		//==========&gt;insert shsharestatement
+		insert into shsharestatement
+				( 	coop_id , 			member_no, 		seq_no, 					operate_date, 			share_date , 			account_date ,
+					slip_date, 			ref_docno, 			shritemtype_code, 	period,					share_amount, 		sharestk_amt, 		
+					entry_id, 			entry_date, 			entry_bycoopid,		shrarrearbf_amt,		shrarrear_amt,			moneytype_code ,
+					ref_slipno)
+		values	
+				( 	:ls_memcoopid , 	:ls_memno, 		:li_laststmno, 			:idtm_operate, 			:idtm_operate, 			:ldtm_receiptdate, 
+					:ldtm_receiptdate,	:ls_receiptno, 		:ls_shritem, 			:li_period,				:ldc_shrpaymentamt, 	:ldc_shrstkamt, 	
+					:is_userid, 			:ldtm_entrydate, 	:ls_memcoopid,		:ldc_bfshrarramt,		:ldc_fwshrarramt,		&#39;TMT&#39; ,
+					:ls_kpslipno) 
+		using sqlca ;
+				  
+		if ( sqlca.sqlcode &lt;&gt; 0 ) then
+			iex_exception.text += &quot;พบข้อผิดพลาดในการบันทึก Statement หุ้น #&quot;
+			iex_exception.text += &quot;ทะเบียนสมาชิก : &quot; + ls_memno
+			iex_exception.text += &quot; &quot; + string( sqlca.sqlcode )
+			iex_exception.text += &quot; &quot; + sqlca.sqlerrtext
+			destroy lds_share
+			return -1
+		end if
+		//===============&gt;End job กรณีที่สถานะหุ้นปกติ ให้ระบบชำระค่าหุ้นให้สมาชิกปกติ
+	end if
+	
+	//===============&gt;Update mbmembmaster วันที่เป็นสมาชิก ตามวันที่ได้รับหุ้นงวดแรก
+	if li_upmembdateflag = 1 and li_lastperiod = 1 then
+	
+		update	mbmembmaster
+		set			member_date		= :ldtm_receiptdate
+		where	( coop_id				= :ls_memcoopid )
+		and		( member_no		= :ls_memno ) 
+		using sqlca ;
+				
+		if ( sqlca.sqlcode &lt;&gt; 0 ) then
+			iex_exception.text += &quot;~r~nพบข้อผิดพลาดในการปรับปรุงวันที่เป็นสมาชิกตามวันที่ได้รับหุ้นงวดแรก&quot;
+			iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+			iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+			iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+			destroy lds_share
+			return -1
+		end if
+	end if
+	//===============&gt;End job Update mbmembmaster วันที่เป็นสมาชิก ตามวันที่ได้รับหุ้นงวดแรก
+	
+	ls_primemno = ls_memno
+next	
+
+destroy lds_share
+
+return 1
+end function</code></pre>
+            </div>
+        </div>
+    </details>
+</div>
+<div class="card">
+    <h3>ขั้นตอนที่ 6: ผ่านรายการหนี้เงินกู้รายเดือน (of_post_toloan)</h3>
+    <p>ประมวลผลหนี้รายสัญญา คำนวณหักกลบยอดหนี้เงินต้น ดอกเบี้ย และดอกเบี้ยค้างจ่าย อัปเดตยอดคงเหลือหนี้สินและงวดชำระล่าสุดในตาราง lncontmaster บันทึกความเคลื่อนไหวหนี้ลงตาราง lncontstatement (ประเภทรายการ LPM) สะสมดอกเบี้ยจ่ายเข้าทะเบียนสมาชิก mbmembmaster และตรวจสอบสถานะสัญญาหากมียอดคงเหลือเป็น 0 ระบบจะปิดสัญญาอัตโนมัติ (contract_status = -1)</p>
+    <details>
+        <summary>คลิกเพื่อขยายซอร์สโค้ดของฟังก์ชัน of_post_toloan</summary>
+        <div style="padding: 1rem;">
+            <div class="code-container">
+                <div class="code-header">
+                    <span>PowerBuilder Source: of_post_toloan</span>
+                    <button class="btn-toggle" onclick="toggleCode(this)">ขยายโค้ด</button>
+                </div>
+                <pre><code>protected function integer of_post_toloan ();/***********************************************************
+&lt;description&gt;
+	ประมวลผ่านรายการสัญญาเงินกู้
+&lt;/description&gt;
+
+&lt;arguments&gt;  
+
+&lt;/arguments&gt; 
+
+&lt;return&gt; 
+	Integer	1 = success,  throwable = failure
+&lt;/return&gt; 
+
+&lt;usage&gt; 
+	
+	Revision History:
+	Version 1.0 (Initial version) Modified Date 28/9/2010 by MiT
+	Version 2.0 (Initial version) Modified Date 24/05/2012 by Godji
+&lt;/usage&gt; 
+***********************************************************/
+string		ls_bizzcoopid , ls_kpslipno, ls_temp, ls_sqlext, ls_sqlorder
+string		ls_memno, ls_refmemno, ls_contno, ls_contprior, ls_receiptno, ls_loanitem, ls_loantype, ls_keeptype, ls_trnfromcontno
+string		ls_memprior, ls_refprior, ls_cancelid, ls_tempcontno, ls_tempmemb
+integer	li_period, li_bfperiod, li_lastperiod, li_seqno, li_laststmno, li_stepvalue, li_ret, li_trnstatus, li_stmseqno, li_tmpstmseqno
+integer	li_chk, li_odflag, li_bfcontstatus, li_contstatus, li_bfcontlaw, li_conttype, li_keepstatus, li_genvcflag, li_moneyreturnflag, li_pxafterkepmth, li_kpitemarrdouble_flag
+long		ll_index, ll_count
+dec{2}	ldc_prnpay, ldc_intpay, ldc_intarrpay, ldc_itempay, ldc_itembal, ldc_nkeepint, ldc_nkeepprin
+dec{2}	ldc_apvamt, ldc_bfprnbal, ldc_bfwtdamt, ldc_bfprnarr, ldc_bfintarr, ldc_bfintarrmth, ldc_bfintarrset, ldc_bfintreturn, ldc_bfintaccum
+dec{2}	ldc_prnbal, ldc_wtdamtbal, ldc_prnarrbal, ldc_intarrbal, ldc_intarrsetbal
+dec{2}	ldc_bfintpayall, ldc_bfprnpayall, ldc_contintacm
+dec{2}	ldc_fwintarrear, ldc_fwintreturn , ldc_fwintperiod, ldc_fwintmth , ldc_intperiodpay , ldc_intreturnpay, ldc_intmthpay
+dec{2}	ldc_realprnpay, ldc_realintpay, ldc_realitempay, ldc_adjprnpay, ldc_adjintpay, ldc_adjitempay, ldc_retoverpay, ldc_temppayret
+dec{4}	ldc_contintrate
+datetime	ldtm_receiptdate, ldtm_calintfrom, ldtm_calintto, ldtm_bflastpay, ldtm_bflastcalint, ldtm_bflastkeep
+datetime	ldtm_entrydate, ldtm_lastpaydate, ldtm_lastkeepdate, ldtm_lastcaldate, ldtm_canceldate
+n_ds		lds_loan
+li_moneyreturnflag			= ids_kpconstant.object.money_return_flag[1] 
+li_kpitemarrdouble_flag	= ids_kpconstant.object.kpitemarrdouble_flag[1] 
+ldtm_entrydate				= datetime( today(), now() )
+if isnull( ls_tempcontno ) then ls_tempcontno = &#39;&#39;
+if isnull( ls_tempmemb ) then ls_tempmemb = &#39;&#39;
+
+this.of_pgmessage( &quot;กำลังดึงข้อมูล...หนี้เงินกู้&quot; )
+
+lds_loan	= create n_ds
+lds_loan.dataobject	= &quot;d_kp_rcvpost_loan&quot;
+lds_loan.settransobject( sqlca )
+if isnull( ldc_intmthpay ) then ldc_intmthpay = 0
+
+try
+	inv_kpsrv.of_setsqlselect( &quot;kptempreceive&quot; )
+	if inv_kpsrv.of_setsqldw( lds_loan ) &lt;&gt; 1 then
+		destroy lds_loan
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL สร้างรายงานงบหน้าประจำเดือน(1)&quot;
+		return -1
+	end if
+	
+	if inv_kpsrv.of_setsqldw_coop_recvperiod( lds_loan , &quot;kptempreceive&quot; ) &lt;&gt; 1 then
+		destroy lds_loan
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL สร้างรายงานงบหน้าประจำเดือน(2)&quot;
+		return -1
+	end if
+catch ( throwable lthw_error )
+end try
+
+if ii_chkbaldept = 1 then 
+	if this.of_set_sql_chkdpbal( lds_loan , &quot;kptempreceive&quot; ) &lt;&gt; 1 then
+		destroy lds_loan
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL ตรวจสอบเงินฝากคงเหลือ&quot;
+		return -1
+	end if
+end if
+
+ls_temp	= lds_loan.getsqlselect()
+ls_sqlorder = &quot; order by kptempreceive.membgroup_code, kptempreceive.member_no, kptempreceivedet.keepitemtype_code, kptempreceivedet.shrlontype_code, kptempreceivedet.loancontract_no &quot;
+if is_coopid = &#39;056001&#39; then /*DOHCOOP*/
+	//ls_temp	= lds_loan.getsqlselect()
+	ls_sqlext = &quot; and ( kptempreceive.keeporg_code = &#39;&quot; + is_keeporg + &quot;&#39; )&quot;
+	ls_temp	= ls_temp + ls_sqlext + ls_sqlorder
+	
+elseif is_coopid = &#39;065001&#39; then /*EGATCOOP*/
+	ls_sqlorder = &quot; order by kptempreceive.membgroup_code, kptempreceive.member_no, kptempreceivedet.shrlontype_code, kptempreceivedet.loancontract_no, kptempreceivedet.keepitemtype_code desc &quot;
+	ls_temp	= ls_temp + ls_sqlorder
+end if
+
+lds_loan.setsqlselect( ls_temp )
+lds_loan.settransobject( sqlca )
+ll_count	= lds_loan.retrieve()
+for ll_index = 1 to ll_count
+	// ตรวจสอบการสั่งหยุดทำงาน
+	if mod( ll_index, 100 ) = 0 then
+		if this.of_pgisstop() then
+			this.of_pgmessage( &quot;หยุดจากทำงานจากผู้ใช้ หนี้เงินกู้&quot; )
+			destroy lds_loan
+			return 0
+		end if
+	end if
+	
+	ls_bizzcoopid		= lds_loan.object.coop_id[ ll_index]
+	ls_kpslipno			= lds_loan.object.kpslip_no[ ll_index]
+	ls_memno			= trim( lds_loan.getitemstring( ll_index, &quot;member_no&quot; ) )
+	ls_refmemno		= trim( lds_loan.getitemstring( ll_index, &quot;ref_membno&quot; ) )
+	ls_contno			= trim( lds_loan.getitemstring( ll_index, &quot;loancontract_no&quot; ) )
+	ls_receiptno			= trim( lds_loan.getitemstring( ll_index, &quot;receipt_no&quot; ) )
+	ls_loantype			= trim( lds_loan.getitemstring( ll_index, &quot;shrlontype_code&quot; ) )
+	ls_keeptype			= lds_loan.getitemstring( ll_index, &quot;keepitemtype_code&quot; )
+	ls_cancelid			= lds_loan.getitemstring( ll_index, &quot;cancel_id&quot; )
+	li_seqno				= lds_loan.getitemnumber( ll_index, &quot;seq_no&quot; )
+	li_laststmno			= lds_loan.getitemnumber( ll_index, &quot;last_stm_no&quot; )
+	li_period				= lds_loan.getitemnumber( ll_index, &quot;period&quot; )
+	li_bfperiod			= lds_loan.getitemnumber( ll_index, &quot;last_periodpay&quot; )
+	li_odflag				= lds_loan.getitemnumber( ll_index, &quot;od_flag&quot; )
+	li_bfcontstatus		= lds_loan.getitemnumber( ll_index, &quot;contract_status&quot; )
+	li_bfcontlaw			= lds_loan.getitemnumber( ll_index, &quot;contlaw_status&quot; )
+	li_keepstatus		= lds_loan.getitemnumber( ll_index, &quot;keepitem_status&quot; )
+	ldc_prnpay			= lds_loan.getitemdecimal( ll_index, &quot;principal_payment&quot; )
+	ldc_intpay			= lds_loan.getitemdecimal( ll_index, &quot;interest_payment&quot; )
+	ldc_intarrpay		= lds_loan.getitemdecimal( ll_index, &quot;intarrear_payment&quot; )
+	ldc_intreturnpay	= lds_loan.getitemdecimal( ll_index, &quot;bfinterest_return&quot; ) //ดอกเบี้ยคืนที่คืนในแถว kptemp
+	ldc_intmthpay		= lds_loan.getitemdecimal( ll_index, &quot;bfintmonth_arrear&quot; ) //ดอกเบี้ยค้างเดือนที่ถูกเรียกเก็บ kptemp
+	ldc_itempay			= lds_loan.getitemdecimal( ll_index, &quot;item_payment&quot; )
+	ldc_itembal			= lds_loan.getitemdecimal( ll_index, &quot;item_balance&quot; )
+	ldc_apvamt			= lds_loan.getitemdecimal( ll_index, &quot;loanapprove_amt&quot; )
+	ldc_bfprnbal			= lds_loan.getitemdecimal( ll_index, &quot;principal_balance&quot; )
+	ldc_bfwtdamt		= lds_loan.getitemdecimal( ll_index, &quot;withdrawable_amt&quot; )
+	ldc_bfintarr			= lds_loan.getitemdecimal( ll_index, &quot;interest_arrear&quot; ) 
+	ldc_bfintarrmth		= lds_loan.getitemdecimal( ll_index, &quot;intmonth_arrear&quot; )
+	ldc_bfintarrset		= lds_loan.getitemdecimal( ll_index, &quot;intset_arrear&quot; )
+	ldc_bfintreturn		= lds_loan.getitemdecimal( ll_index, &quot;interest_return&quot; ) //ดอกเบี้ยคืนที่ค้างอยู่ใน lncontmaster
+	ldc_nkeepint			= lds_loan.getitemdecimal( ll_index, &quot;interest_period&quot; )
+	ldc_nkeepprin		= lds_loan.getitemdecimal( ll_index, &quot;principal_period&quot; )
+	ldtm_receiptdate	= lds_loan.getitemdatetime( ll_index, &quot;receipt_date&quot; )
+	ldtm_calintfrom		= lds_loan.getitemdatetime( ll_index, &quot;calintfrom_date&quot; )
+	ldtm_calintto		= lds_loan.getitemdatetime( ll_index, &quot;calintto_date&quot; )
+	ldtm_bflastpay		= lds_loan.getitemdatetime( ll_index, &quot;lastpayment_date&quot; )
+	ldtm_bflastcalint	= lds_loan.getitemdatetime( ll_index, &quot;lastcalint_date&quot; )
+	ldtm_bflastkeep	= lds_loan.getitemdatetime( ll_index, &quot;lastkeeping_date&quot; )
+	ldtm_canceldate	= lds_loan.getitemdatetime( ll_index, &quot;cancel_date&quot; )
+	li_trnstatus			= lds_loan.getitemnumber( ll_index, &quot;transfer_status&quot; )
+	ls_trnfromcontno	= lds_loan.getitemstring( ll_index, &quot;trnfrom_contno&quot; )
+	li_pxafterkepmth	= lds_loan.getitemnumber( ll_index, &quot;pxaftermthkeep_type&quot; )
+	ldc_realprnpay		= lds_loan.getitemnumber( ll_index, &quot;realprincipal_payment&quot; )
+	ldc_realintpay		= lds_loan.getitemnumber( ll_index, &quot;realinterest_payment&quot; )
+	ldc_realitempay	= lds_loan.getitemnumber( ll_index, &quot;realitem_payment&quot; )
+	ldc_adjprnpay		= lds_loan.getitemnumber( ll_index, &quot;adjust_prnamt&quot;)
+	ldc_adjintpay		= lds_loan.getitemnumber( ll_index, &quot;adjust_intamt&quot;)
+	ldc_adjitempay		= lds_loan.getitemnumber( ll_index, &quot;adjust_itemamt&quot;)
+	ldc_retoverpay		= lds_loan.getitemnumber( ll_index, &quot;retoverpay_amt&quot;)
+	ls_loanitem			= &quot;LPM&quot;
+	ldc_fwintarrear		= 0
+	
+	
+	if li_moneyreturnflag = 1 and li_kpitemarrdouble_flag &lt;&gt; 6 then ldc_intreturnpay	= 0	//=====&gt;กรณีตัดยอด MRT แยกอีก 1 แถว
+	if isnull( li_laststmno ) then li_laststmno = 0
+	if isnull( li_bfperiod ) then li_bfperiod = 0
+	if isnull( li_odflag ) then li_odflag = 0
+	if isnull( ldc_prnpay ) then ldc_prnpay = 0
+	if isnull( ldc_intpay ) then ldc_intpay = 0
+	if isnull( ldc_bfprnbal ) then ldc_bfprnbal = 0
+	if isnull( ldc_bfwtdamt ) then ldc_bfwtdamt = 0
+	if isnull( ldc_bfprnarr ) then ldc_bfprnarr = 0
+	if isnull( ldc_bfintaccum ) then ldc_bfintaccum = 0
+	if isnull( ldc_bfintarr ) then ldc_bfintarr = 0
+	if isnull( ldc_bfintarrmth ) then ldc_bfintarrmth = 0
+	if isnull( ldc_bfintarrset ) then ldc_bfintarrset = 0
+	if isnull( ldc_nkeepint ) then ldc_nkeepint = 0
+	if isnull( ldc_nkeepprin ) then ldc_nkeepprin = 0
+	if isnull( ldc_bfintpayall ) then ldc_bfintpayall = 0
+	if isnull( ldc_bfprnpayall ) then ldc_bfprnpayall = 0
+	if isnull( ldc_fwintarrear ) then ldc_fwintarrear = 0
+	if isnull( ldc_fwintmth ) then ldc_fwintmth = 0
+	if isnull( ldc_fwintreturn ) then ldc_fwintreturn = 0
+	if isnull( ldc_intperiodpay ) then ldc_intperiodpay = 0 
+	if isnull( ldc_intreturnpay ) then ldc_intreturnpay = 0 
+	if isnull( ldc_intmthpay ) then ldc_intmthpay = 0
+	if isnull( ldc_retoverpay ) then ldc_retoverpay = 0
+	if isnull( ldc_temppayret ) then ldc_temppayret = 0
+	
+	//==========&gt;DOH : สอ.กรมทางหลวง : มีเก็บเงินได้บางส่วน
+	if (is_coopcontrol = &#39;056001&#39; and li_keepstatus = -99) or (is_coopcontrol = &#39;056001&#39; and li_keepstatus = -1 and ldc_realitempay &gt; 0 and ldc_adjitempay = 0 and ldc_retoverpay = 0) then
+		ldc_prnpay	= ldc_realprnpay
+		ldc_intpay	= ldc_realintpay
+	end if
+	
+	//==========&gt;PEA : สอ.PEA กรณียอด เรียกเก็บเป็น 0 = เก็บเงินไม่ได้ ไม่ลง statement  
+	if is_coopcontrol = &#39;008001&#39; and ldc_itempay = 0 then
+		li_keepstatus = -9
+	end if
+	
+	//==========&gt;EGAT : สอ.EGAT
+	//ls_tempcontno, ls_tempmemb
+	if is_coopcontrol = &#39;065001&#39; then
+		if ls_tempcontno = ls_contno then li_laststmno = li_tmpstmseqno
+	end if
+	
+	//==========&gt;เริ่มกระบวนการ ตรวจเช็ค ตัดยอด&lt;==========//
+	//####Cherry รอปรับเพิ่ม script เพิ่มเติม กรณีมีเคสเดียวกับวิทยุการบิน
+	if is_coopcontrol = &#39;077001&#39; then
+		//สอ.วิทยุการบินมีเคสเก็บดอกเบี้ยงวดไม่ครบต้องตั้งค้างต่อ ***อาจจะมีความผิดพลาดเคสเกลี่ยยอด หาเคสเทสเพิ่ม
+		ldc_fwintarrear 	= ldc_bfintarr + ldc_bfintarrmth + ldc_nkeepint
+	else 
+		ldc_fwintarrear 	= ldc_bfintarr + ldc_bfintarrmth
+	end if
+	ldc_fwintreturn		= ldc_bfintreturn
+	ldc_prnbal			= ldc_bfprnbal - ldc_prnpay
+	ldc_prnarrbal		= ldc_bfprnarr - ( ldc_prnpay - ldc_nkeepprin )
+	
+	//==========&gt;ดอกเบี้ยค้างยกไป ***รออ่าน flag เรื่องกันยอดเรียกเก็บไม่กันยอดเรียกเก็บ
+	if is_coopcontrol = &#39;008001&#39; or is_coopcontrol = &#39;057001&#39; then
+		ldc_fwintarrear 	= ldc_fwintarrear - ldc_intarrpay - ldc_intmthpay
+		ldc_fwintmth		= 0
+		
+	elseif 	is_coopcontrol = &#39;077001&#39; then
+		ldc_fwintarrear 	= ldc_fwintarrear - ldc_intpay
+		ldc_fwintmth		= 0
+		
+	elseif is_coopcontrol = &#39;084001&#39; then //สอ.IRPC
+		ldc_fwintarrear		= ldc_bfintarr - ldc_intarrpay
+		ldc_fwintmth		= ldc_bfintarrmth - ldc_intmthpay
+		
+	else 
+		ldc_fwintarrear 	= ldc_fwintarrear - ldc_intarrpay
+		ldc_fwintmth		= 0
+	end if
+	
+	if li_kpitemarrdouble_flag = 6 then ////6 นำดอกเบี้ยคืน - ดอกเบี้ยงวด (คืนในสัญญาเงินกู้) //#####@Chxrry รอแยกค่าคงที่ ค้างคืน ออกจากกันอีกรอบ
+		//=====&gt;ตรวจสอบว่าได้ใช้ดอกเบี้ยคืนหักลบในเรียกเก็บหมดไหม
+		ldc_temppayret = ldc_nkeepint + ldc_intarrpay			//ดอกเบี้ยงวดที่ระบบคำนวณ + ดอกเบี้ยค้างที่ต้องชำระ
+		if ldc_temppayret &lt; ldc_intreturnpay then				//กรณีที่ยอดดอกที่คำนวณจากระบบน้อยกว่าดอกเบี้ยคืน ให้หักลบดอกเบี้ยคืนแค่ส่วนที่นำไปหักในเรียกเก็บ
+			ldc_intreturnpay = ldc_temppayret	
+		end if
+		ldc_fwintreturn = ldc_fwintreturn - ldc_intreturnpay	//คืนยกไป
+	else
+		ldc_fwintreturn = ldc_fwintreturn		//คืนยกไป
+	end if
+	ldc_wtdamtbal	= ldc_bfwtdamt
+	
+	// ถ้าดอกเบี้ยที่ตั้งค้างติดลบ
+	if ldc_intarrbal &lt; 0 then ldc_intarrbal = 0
+	if ldc_fwintarrear &lt; 0 then ldc_fwintarrear = 0
+	if ldc_fwintmth &lt; 0 then ldc_fwintmth = 0
+	
+	//ตรวจสอบรูปแบบการชำระหากเป็นการชำระแบบไม่กันยอดเรียกเก็บให้ทำการคืนดอกเบี้ยที่เก็บทั้งหมดเมื่อมีการหักกลบต้นเป็น 0 ส่วนชำระให้ทำประมวลตั้งคืนทีหลัง
+	if li_pxafterkepmth = 2 and ldc_bfprnbal = 0 then ldc_fwintreturn = ldc_fwintreturn 
+	
+	// พวก ต้นเงิน,ด/บ ชำระสะสม
+	ldc_bfintaccum		= ldc_bfintaccum + ldc_intpay
+	ldc_bfintpayall		= ldc_bfintpayall + ldc_intpay
+	ldc_bfprnpayall		= ldc_bfprnpayall + ldc_prnpay
+	
+	li_laststmno ++
+
+	// ถ้าเป็นสัญญา OD ต้องเพิ่มยอดรอเบิก
+	if li_odflag = 1 then
+		ldc_wtdamtbal	= ldc_apvamt - ldc_prnbal
+	end if
+
+	//===&gt;งวดชำระเงิน
+	//===&gt;แก้ไขให้ยึดจาก master แล้ว +1 เสมอไม่สนใจ ใน kptemp
+	//=====&gt;สอ.กรมส่งเสริมกรณีที่เป็นสัญญา ATM กรณีตัดยอดให้ยึดงวดจากเรียกเก็บก่อน ส่วน master ยึดงวดตาม master ไม่ต้อง +1
+	if is_coopcontrol = &#39;057001&#39; and li_odflag = 1 and li_bfperiod = 0 and li_period &gt; 1 then
+		
+		li_lastperiod = li_period
+	else
+		
+		li_lastperiod = li_bfperiod + 1
+	end if
+
+	// วันที่คิด ด/บ ล่าสุด
+	if ldtm_calintto &gt; ldtm_bflastcalint then
+		ldtm_lastcaldate = ldtm_calintto
+	else
+		ldtm_lastcaldate = ldtm_bflastcalint
+	end if
+	
+	// วันที่ชำระล่าสุด
+	if ldtm_receiptdate &gt; ldtm_bflastpay or isnull( ldtm_bflastpay ) then
+		ldtm_lastpaydate = ldtm_receiptdate
+	end if
+	
+	// เรียกเก็บล่าสุด
+	if ldtm_receiptdate &gt; ldtm_bflastkeep or isnull( ldtm_bflastkeep ) then
+		ldtm_lastkeepdate = ldtm_receiptdate
+	end if
+
+	// ถ้าหมดและไม่เป็นบัญชี OD ปิดสัญญา
+	if ldc_prnbal &lt;= 0 and ldc_wtdamtbal = 0 and ldc_intarrbal = 0 and li_odflag = 0 then
+		li_contstatus	= STATUS_CLOSE
+	else
+		//===&gt;สอ.PEA กรณีมีค้างชำระ ก็ให้สัญญาจบ
+		if is_coopid = &#39;008001&#39; and ldc_intarrbal &gt; 0 then
+			li_contstatus	 = STATUS_CLOSE
+		else
+			li_contstatus	= li_bfcontstatus
+		end if
+	end if
+	
+	//ส่วนของการ Set ยอด ด/บ ค้างตัดจ่าย init ค่ายอดค้างรับไว้ก่อน
+	ldc_intarrsetbal	= ldc_bfintarrset
+	
+	// ถ้าไม่ Gen voucher ไว้ก็เปลี่ยนไปตามยอดค้างคงเหลือ ณวันที่ตัดยอด
+	// แต่ถ้า Gen ไปแล้วห้ามเปลี่ยนค่า เพราะจะทำให้ยอด ด/บ ค้างตัดจ่ายไม่ตรงกับบัญชีได้
+	if ( ldc_intarrpay &gt; 0 or ldc_bfintarrset &gt; 0 ) and li_genvcflag = 0 then
+		if li_keepstatus = -99 then
+			ldc_intarrpay	= 0
+		else
+			if ldc_bfintarrset &gt; ldc_intpay then
+				ldc_intarrpay	= ldc_intpay
+			else
+				ldc_intarrpay	= ldc_bfintarrset
+			end if
+		end if
+		ldc_intarrsetbal		= ldc_intarrsetbal - ldc_intarrpay
+	end if
+	
+	//===&gt;Insert Kpmastreceivedet 
+	li_ret = this.of_post_tomastdet_lon( ls_kpslipno, li_seqno, ldtm_entrydate, ldc_prnbal,  li_lastperiod) 
+	if ( li_ret &lt;&gt; 1 ) then
+		destroy lds_loan
+		return -1
+	end if
+	
+	//Step&gt;&gt;&gt;Update lncontmaster กรณีเป็นสัญญายกเลิกกระดาษทำการ Update วันที่อย่างเดียวแล้วข้ามทำอันต่อไป
+	if is_coopid = &#39;056001&#39; and (li_keepstatus = -99 or li_keepstatus = -1 or li_keepstatus = -9) and ( ldc_realitempay = 0 or ( ldc_realitempay &gt; 0 and ldc_retoverpay = ldc_realitempay)) then
+		update	lncontmaster
+			set			lastkeeping_date	= :ldtm_lastpaydate,
+						lastprocess_date	= :ldtm_lastpaydate,
+						lastcalint_date		= :ldtm_bflastcalint,
+						lastaccess_date	= :ldtm_lastpaydate,
+						nkeep_principal		= 0,
+						nkeep_interest		= 0,
+						rkeep_principal		= 0,
+						rkeep_interest		= 0
+			where	coop_id				= :ls_bizzcoopid
+			and		( loancontract_no	= :ls_contno ) 
+			using sqlca;
+			
+			if ( sqlca.sqlcode &lt;&gt; 0 ) then
+			destroy lds_loan
+			iex_exception.text +=&quot;~nพบข้อผิดพลาดในการปรับปรุงสัญญา : &quot;+ls_contno
+			iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+			iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+			iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+			return -1
+		end if
+		continue
+		
+	elseif ( is_coopid &lt;&gt; &#39;056001&#39; and li_keepstatus = -9 ) or ( is_coopid &lt;&gt; &#39;056001&#39; and li_keepstatus = -1 ) then
+		//=====&gt;กรณียกเลิก clear nkeep, rkeep
+		update	lncontmaster
+			set			nkeep_principal		= 0,
+						nkeep_interest		= 0,
+						rkeep_principal		= 0,
+						rkeep_interest		= 0
+			where	coop_id				= :ls_bizzcoopid
+			and		( loancontract_no	= :ls_contno ) 
+			using sqlca;
+			
+			if ( sqlca.sqlcode &lt;&gt; 0 ) then
+			destroy lds_loan
+			iex_exception.text +=&quot;~nพบข้อผิดพลาดในการปรับปรุงสัญญา : &quot;+ls_contno
+			iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+			iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+			iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+			return -1
+		end if
+		continue
+	end if
+
+	this.of_pgmessage( string( ll_index , &quot;#,##0&quot; ) + &quot;/&quot; + string( ll_count , &quot;#,##0&quot; ) + &quot;. ทะเบียน &quot;+ls_memno+ &quot;/ สัญญาเงินกู้ #&quot; +ls_contno+ &quot; เงินต้น &quot;+string(ldc_prnpay,&quot;#,##0.00&quot;)+&quot; ด/บ &quot;+string(ldc_intpay, &quot;#,##0.00&quot;) )
+	
+	//Remark : กรณีให้ทำการคิดดอกเบี้ยเรียกเก็บแบบเต็มเดือน หรือนับวันที่คิดดอกเบี้ยด้วย
+	//===&gt;ให้ลง statement หนี้เป็นวันที่สิ้นเดือน
+	if ii_cntkepintday = 1 then ldtm_calintto = datetime( relativedate( date( ldtm_calintto ),  -1 ) )
+	
+	/*###update ตามวันที่ทำรายการจริง*/
+	if ii_postrealdateflag = 1 then ldtm_lastpaydate = idtm_operate
+	
+	//=====&gt;สอ.กรมส่งเสริมกรณีที่เป็นสัญญา ATM กรณีตัดยอดให้ยึดงวดจากเรียกเก็บก่อน ส่วน master ยึดงวดตาม master ไม่ต้อง +1
+	if is_coopcontrol = &#39;057001&#39; and li_odflag = 1 and li_bfperiod = 0 and li_period &gt; 1 then li_lastperiod = li_bfperiod
+	
+	//=====&gt;กรณีมีเกลี่ยยอดใหม่ก่อนตัดยอด 
+	//========&gt;สอ.วิทยุการบิน
+	//if is_coopcontrol = &#39;077001&#39; then ldc_fwintarrear = 0 
+
+	//==========&gt;Update lncontmaster
+	update	lncontmaster
+	set		principal_balance	= :ldc_prnbal,
+			withdrawable_amt	= :ldc_wtdamtbal,
+			last_periodpay		= :li_lastperiod,
+			lastpayment_date	= :ldtm_lastpaydate,
+			lastcalint_date		= :ldtm_lastcaldate,
+			lastaccess_date	= :ldtm_lastpaydate,
+			lastkeeping_date	= :ldtm_lastkeepdate,
+			last_stm_no			= :li_laststmno,
+			interest_arrear		= :ldc_fwintarrear,
+			interest_return		= :ldc_fwintreturn,
+			intmonth_arrear	= :ldc_fwintmth,
+			nkeep_principal		= 0,
+		 	nkeep_interest		= 0,
+			rkeep_principal		= 0,
+			rkeep_interest		= 0,
+			contract_status		= :li_contstatus,
+			principal_arrear	= 0
+	where coop_id				= :ls_bizzcoopid
+	and 	( loancontract_no	= :ls_contno ) 
+	using sqlca;
+	
+	if ( sqlca.sqlcode &lt;&gt; 0 ) then
+		destroy lds_loan
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการปรับปรุงสัญญา : &quot;+ls_contno
+		iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+		iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+		iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+		return -1
+	end if
+	
+	//===&gt;สอ.PEA ทำการย้ายดอกเบี้ยที่เกิดหลังเรียกเก็บ intset_arrear ไปไว้ intmonth_arrear 
+	if is_coopid = &#39;008001&#39; then
+		update lncontmaster set intmonth_arrear = intset_arrear where coop_id = :ls_bizzcoopid and loancontract_no = :ls_contno
+		using sqlca;
+		if ( sqlca.sqlcode &lt;&gt; 0 ) then
+			destroy lds_loan
+			iex_exception.text += &quot;~nพบข้อผิดพลาดในการปรับปรุงสัญญา update intset arrear to intmonth arrear : &quot;+ls_contno
+			iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+			iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+			iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+			return -1
+		end if
+		
+		//===&gt;Clear intset_arrear = 0 หลังจากที่การย้ายไปอยู่ intmonth_arrear
+		update lncontmaster set intset_arrear = 0 where coop_id = :ls_bizzcoopid and loancontract_no = :ls_contno
+		using sqlca;
+		if ( sqlca.sqlcode &lt;&gt; 0 ) then
+			destroy lds_loan
+			iex_exception.text += &quot;~nพบข้อผิดพลาดในการเคลีย์ข้อมูล intset_arrear : &quot;+ls_contno
+			iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+			iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+			iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+			return -1
+		end if
+		
+	end if
+	
+	//Step&gt;&gt;&gt;บันทึกดอกเบี้ยสะสมให้สมาชิก
+	update	mbmembmaster
+	set			accum_interest		= accum_interest + :ldc_intpay
+	where	coop_id				= :is_coopid
+	and		( member_no 		= :ls_memno )
+	using		sqlca;
+	
+	if ( sqlca.sqlcode &lt;&gt; 0 ) then
+		destroy lds_loan
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการปรับปรุง ด/บ สะสมของสมาชิก &quot;
+		iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+		iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+		iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+		return -1
+	end if
+	
+	//Step&gt;&gt;&gt;บันทึก lncontstatement
+	insert into lncontstatement
+			( coop_id,				loancontract_no,		seq_no,					slip_date,				operate_date,			account_date,			intaccum_date,
+			  ref_slipno,				ref_docno,				loanitemtype_code,	period,		 			principal_payment,	interest_payment,		principal_balance,		
+			  prncalint_amt,		calint_from,				calint_to,					bfintarrear_amt,		bfintreturn_amt,		interest_period,		interest_arrear,		
+			  interest_return,		item_status,				entry_id,					entry_date ,				entry_bycoopid )
+	values ( :ls_bizzcoopid,		:ls_contno,				:li_laststmno,			:ldtm_receiptdate,		:idtm_operate,			:ldtm_receiptdate,		:ldtm_receiptdate,
+			   :ls_kpslipno,			:ls_receiptno,			:ls_loanitem,			:li_lastperiod,			:ldc_prnpay,				:ldc_intpay,				:ldc_prnbal,
+			   :ldc_bfprnbal,		:ldtm_calintfrom,		:ldtm_calintto,			:ldc_bfintarr,			:ldc_bfintreturn,		:ldc_nkeepint,			:ldc_fwintarrear,	
+			   :ldc_intreturnpay,	1,							:is_userid,				:ldtm_entrydate ,		:is_coopid)
+	using sqlca ;
+
+	if ( sqlca.sqlcode &lt;&gt; 0 ) then
+		destroy lds_loan
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการบันทึก Statement สัญญา : &quot;+ls_contno
+		iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+		iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+		iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+		return -1
+	end if
+	
+	//===&gt;เก็บค่าเลขสัญญาเพื่อตรวจสอบ
+	ls_tempcontno		= ls_contno
+	li_tmpstmseqno	= li_laststmno
+	
+next	
+
+destroy lds_loan
+
+return 1
+end function</code></pre>
+            </div>
+        </div>
+    </details>
+</div>
+<div class="card">
+    <h3>ขั้นตอนที่ 7: ผ่านรายการเบี้ยประกันรายเดือน (of_post_toinsure)</h3>
+    <p>ดึงรายการชำระประกันภัยจากตารางพักชั่วคราว อัปเดตยอดเบี้ยประกันภัยสะสมและเบี้ยประกันค้างชำระในตาราง insinsuremaster และบันทึกประวัติการชำระเบี้ยประกันลงในตาราง insinsurestatement รหัสธุรกรรมคือ IPM</p>
+    <details>
+        <summary>คลิกเพื่อขยายซอร์สโค้ดของฟังก์ชัน of_post_toinsure</summary>
+        <div style="padding: 1rem;">
+            <div class="code-container">
+                <div class="code-header">
+                    <span>PowerBuilder Source: of_post_toinsure</span>
+                    <button class="btn-toggle" onclick="toggleCode(this)">ขยายโค้ด</button>
+                </div>
+                <pre><code>public function integer of_post_toinsure ();/***********************************************************
+&lt;description&gt;
+	ประมวลผ่านรายการประกัน
+&lt;/description&gt;
+
+&lt;arguments&gt;  
+
+&lt;/arguments&gt; 
+
+&lt;return&gt; 
+	Integer	1 = success,  throwable = failure
+&lt;/return&gt; 
+
+&lt;usage&gt; 
+	Revision History:
+&lt;/usage&gt; 
+***********************************************************/
+string			ls_kpslipno , ls_memcoopid
+string			ls_memno, ls_refmemno, ls_memprior, ls_refprior, ls_receiptno, ls_primemno, ls_insuranceno, ls_keepitem
+string			ls_insitem, ls_insuretype, ls_sqlext, ls_temp, ls_sqlexttemp, ls_tempinsno
+integer		li_period, li_lastperiod, li_laststmno, li_seqno, li_stepvalue, li_chk, li_keepstatus, li_ret, li_splitflag
+long			ll_index, ll_count, li_tmpstmseqno
+dec{2}		ldc_shrperiodamt, ldc_insperiodvalue, ldc_bountyamt, ldc_premiumaccum, ldc_bfpremiumarr, ldc_fwpremiumarr, ldc_tmpbfaccum, ldc_splitbal, ldc_insfeebal
+dec{2}		ldc_insmthamt, ldc_feemthamt
+datetime		ldtm_receiptdate
+n_ds			lds_insure
+datetime	ldtm_entrydate
+
+ldtm_entrydate	= datetime( today(), now() )
+this.of_pgmessage( &quot;กำลังดึงข้อมูล...ค่าประกันรายเดือน&quot; )
+lds_insure	= create n_ds
+//==========&gt;EGAT : สอ.EGAT
+if is_coopcontrol = &#39;065001&#39; then
+	lds_insure.dataobject	= &quot;d_kp_rcvpost_insure_egat&quot;
+else 
+	lds_insure.dataobject	= &quot;d_kp_rcvpost_insure&quot;
+end if
+lds_insure.settransobject(sqlca)
+
+try
+	inv_kpsrv.of_setsqlselect( &quot;kptempreceive&quot; )
+	
+	if inv_kpsrv.of_setsqldw( lds_insure ) &lt;&gt; 1 then
+		destroy lds_insure
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL of_post_toinsure(1)&quot;
+		return -1
+	end if
+	
+	if inv_kpsrv.of_setsqldw_coop_recvperiod( lds_insure , &quot;kptempreceive&quot; ) &lt;&gt; 1 then
+		destroy lds_insure
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL of_post_toinsure(2)&quot;
+		return -1
+	end if
+catch ( throwable lthw_error )
+end try
+
+if ii_chkbaldept = 1 then
+	if this.of_set_sql_chkdpbal( lds_insure , &quot;kptempreceive&quot; ) &lt;&gt; 1 then
+		destroy lds_insure
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL ตรวจสอบเงินฝากคงเหลือ of_post_toshare(3)&quot;
+		return -1
+	end if
+end if
+
+if is_coopcontrol = &#39;056001&#39; then /*สอ.กรมทางหลวงตัดตามกลุ่มการหักเงิน*/
+	ls_temp	= lds_insure.getsqlselect()
+	ls_sqlext = &quot; and ( kptempreceive.keeporg_code = &#39;&quot; + is_keeporg + &quot;&#39; ) &quot;
+	ls_temp	= ls_temp + ls_sqlext
+	lds_insure.setsqlselect( ls_temp )
+	lds_insure.settransobject( sqlca )
+end if
+
+lds_insure.retrieve()
+
+ll_count = lds_insure.rowcount()
+
+ls_primemno = &quot;00000&quot;
+for ll_index = 1 to ll_count
+	
+	//========&gt;ตรวจสอบการสั่งหยุดทำงาน
+	if mod( ll_index, 100 ) = 0 then
+		if this.of_pgisstop() then
+			this.of_pgmessage( &quot;หยุดจากทำงานจากผู้ใช้ ค่าประกันรายเดือน&quot; )
+			destroy lds_insure
+			return 0
+		end if
+	end if
+	
+	ls_kpslipno				= trim( lds_insure.object.kpslip_no[ll_index] )
+	ls_memcoopid			= trim( lds_insure.object.memcoop_id[ll_index] )
+	ls_memno				= trim( lds_insure.getitemstring( ll_index, &quot;member_no&quot; ) )
+	ls_refmemno			= trim( lds_insure.getitemstring( ll_index, &quot;ref_membno&quot; ) )
+	ls_receiptno				= trim( lds_insure.getitemstring( ll_index, &quot;receipt_no&quot; ) )
+	ls_keepitem				= trim( lds_insure.getitemstring( ll_index, &quot;keepitemtype_code&quot;))
+	ls_insuretype			= trim( lds_insure.getitemstring( ll_index, &quot;shrlontype_code&quot; ) )
+	ls_insuranceno			= lds_insure.getitemstring( ll_index, &quot;insurance_no&quot; )
+	li_seqno					= lds_insure.getitemnumber( ll_index, &quot;seq_no&quot; )
+	li_keepstatus			= lds_insure.getitemnumber( ll_index, &quot;keepitem_status&quot; )
+	ldc_insperiodvalue		= lds_insure.getitemdecimal( ll_index, &quot;item_payment&quot; )
+	ldtm_receiptdate		= lds_insure.getitemdatetime( ll_index, &quot;receipt_date&quot; )
+	ldc_bountyamt			= lds_insure.getitemdecimal( ll_index, &quot;bounty_amt&quot; )
+	ldc_bfpremiumarr		= lds_insure.getitemdecimal( ll_index, &quot;premium_arrear&quot; )
+	ldc_premiumaccum	= lds_insure.getitemdecimal( ll_index, &quot;premium_accum&quot; )
+	li_laststmno				= lds_insure.getitemnumber( ll_index, &quot;last_stm_no&quot; )
+	li_period					= lds_insure.getitemnumber( ll_index, &quot;period&quot; )
+	li_splitflag				= lds_insure.getitemnumber( ll_index, &quot;split_flag&quot; ) 			//===&gt;สถานะแบ่งหักประกัน
+	ldc_splitbal				= lds_insure.getitemdecimal( ll_index, &quot;split_balance&quot; ) 		//===&gt;ยอดคงเหลแบ่งหักประกัน
+	//ldc_premiummiss		= lds_insure.getitemnumber( ll_index, &quot;premium_missed&quot; )	//===&gt;ยอดประกันเก็บเพิ่ม
+	if is_coopcontrol = &#39;065001&#39; then
+		ldc_insfeebal			= lds_insure.getitemnumber( ll_index, &quot;fee_balance&quot; )	//===&gt;ยอดค่าธรรมเนียมคงเหลือ
+		ldc_insmthamt			= lds_insure.getitemdecimal( ll_index, &quot;principal_payment&quot; )
+		ldc_feemthamt			= lds_insure.getitemdecimal( ll_index, &quot;interest_payment&quot; )
+	end if
+
+	ldc_fwpremiumarr = 0
+	if isnull( ldc_premiumaccum ) then ldc_premiumaccum = 0
+	if isnull( li_lastperiod ) then li_lastperiod = 0
+	if isnull( li_laststmno ) then li_laststmno = 0
+	if isnull( ls_refmemno ) then ls_refmemno = ls_memno
+	if isnull( li_splitflag ) then li_splitflag = 0
+	if isnull( ldc_splitbal ) then ldc_splitbal = 0
+	if isnull( ldc_insfeebal ) then ldc_insfeebal = 0
+	if isnull( ldc_insmthamt ) then ldc_insmthamt = 0
+	if isnull( ldc_feemthamt ) then ldc_feemthamt = 0
+	
+	//========&gt;Set default value
+	ls_insitem				= &quot;IPM&quot;
+	ldc_insperiodvalue		= ldc_insperiodvalue
+	
+	//========&gt;ตรวจสอบเลขประกันที่ผ่านรายการก่อนหน้า
+	if ls_tempinsno = ls_insuranceno then 
+		li_laststmno 			= li_tmpstmseqno
+		ldc_premiumaccum	= ldc_tmpbfaccum
+	else
+		li_tmpstmseqno	= 0
+		ls_tempinsno		= &#39;&#39;
+	end if
+	
+	//========&gt;ตรวจสอบว่าแบ่งหักชำระรายเดือนหรือป่าว
+	if li_splitflag = 1 and is_coopcontrol &lt;&gt; &#39;065001&#39; then 
+		
+		ldc_splitbal = ldc_splitbal - ldc_insperiodvalue
+		
+	elseif li_splitflag = 1 and is_coopcontrol = &#39;065001&#39; then 
+		
+		if ldc_insmthamt &gt; 0 then ldc_insperiodvalue = ldc_insmthamt
+		ldc_splitbal = ldc_splitbal - ldc_insperiodvalue
+		if ldc_insfeebal &gt; 0 then ldc_insfeebal = ldc_insfeebal - ldc_feemthamt
+	end if
+	
+	ldc_premiumaccum	+= ldc_insperiodvalue
+	li_laststmno ++
+	li_lastperiod ++
+	
+	//========&gt;@Cher Fix bug แยกเก็บ งวด กับค้างออก
+	if ldc_bfpremiumarr &gt; 0 then  ldc_fwpremiumarr = 0
+	
+	//========&gt;Post Kpmastreceivedet
+	li_ret = this.of_post_tomastdet_ins( ls_kpslipno, li_seqno, ldtm_entrydate ) 
+	if ( li_ret &lt;&gt; 1 ) then
+		destroy lds_insure
+		return -1
+	end if
+	
+	//========&gt;ถ้าเป็นรายการยกเลิกข้ามทำอันต่อไป
+	if li_keepstatus &lt;&gt; 1 then
+		continue
+	end if
+	
+	this.of_pgmessage( string( ll_index , &quot;#,##0&quot; ) + &quot;/&quot; + string( ll_count , &quot;#,##0&quot; )  +&quot;. ทะเบียน &quot;+ls_memno+&quot; &gt; ประกันรายเดือน &quot;+string(ldc_insperiodvalue, &quot;#,##0.00&quot;)+&quot; &gt; ทุนประกันสะสม &quot;+string(ldc_premiumaccum,&quot;#,##0.00&quot;) )
+	
+	//========&gt;กรณีไม่มีเลขทะเบียนประกันให้ข้ามอัพเดทตารางประกัน
+	if isnull( ls_insuranceno ) then continue
+	
+	//========&gt;Update insinsuremaster 
+	//=============&gt;EGATCOOP
+	if is_coopcontrol = &#39;065001&#39; then 
+		if ls_keepitem = &#39;I02&#39; then 
+			//========&gt;ประกันเก็บเพิ่ม
+			update	insinsuremaster
+			set			premium_accum	= :ldc_premiumaccum,
+						last_stm_no			= :li_laststmno,
+						lastkeeping_date	= :ldtm_receiptdate,
+						premium_missed	= 0
+			where	( coop_id				= :ls_memcoopid )
+			and		( insurance_no		= :ls_insuranceno ) 
+			using sqlca ;
+					
+			if ( sqlca.sqlcode &lt;&gt; 0 ) then
+				destroy lds_insure
+				iex_exception.text += &quot;~r~nพบข้อผิดพลาดในการปรับปรุงทุนประกันสะสมสมาชิก&quot;
+				iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno + &quot; &gt;&gt;เลขประกัน : &quot; + ls_insuranceno
+				iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+				iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+				return -1
+			end if
+		else 
+			//========&gt;EGATCOOP
+			update	insinsuremaster
+			set			premium_accum	= :ldc_premiumaccum,
+						last_stm_no			= :li_laststmno,
+						lastkeeping_date	= :ldtm_receiptdate,
+						premium_arrear	= :ldc_fwpremiumarr,
+						split_balance		= :ldc_splitbal,
+						fee_balance			= :ldc_insfeebal
+			where	( coop_id				= :ls_memcoopid )
+			and		( insurance_no		= :ls_insuranceno ) 
+			using sqlca ;
+					
+			if ( sqlca.sqlcode &lt;&gt; 0 ) then
+				destroy lds_insure
+				iex_exception.text += &quot;~r~nพบข้อผิดพลาดในการปรับปรุงทุนประกันสะสมสมาชิก&quot;
+				iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno + &quot; &gt;&gt;เลขประกัน : &quot; + ls_insuranceno
+				iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+				iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+				return -1
+			end if
+		end if
+	else 
+		//=============&gt;OTHERCOOP
+		update	insinsuremaster
+		set			premium_accum	= :ldc_premiumaccum,
+					last_stm_no			= :li_laststmno,
+					lastkeeping_date	= :ldtm_receiptdate,
+					premium_arrear	= :ldc_fwpremiumarr,
+					split_balance		= :ldc_splitbal
+		where	( coop_id				= :ls_memcoopid )
+		and		( insurance_no		= :ls_insuranceno ) 
+		using sqlca ;
+				
+		if ( sqlca.sqlcode &lt;&gt; 0 ) then
+			destroy lds_insure
+			iex_exception.text += &quot;~r~nพบข้อผิดพลาดในการปรับปรุงทุนประกันสะสมสมาชิก&quot;
+			iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno + &quot; &gt;&gt;เลขประกัน : &quot; + ls_insuranceno
+			iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+			iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+			return -1
+		end if
+	end if
+	
+	//========&gt;Insert insinsurestatement
+	insert into insinsurestatement
+			( 	coop_id , 				insurance_no, 			seq_no, 					slip_date, 				operate_date , 			ref_slipno ,
+				insitemtype_code, 		premium_payment,	bounty_payment, 		premium_accum,		moneytype_code, 		item_status,
+				entry_id, 				entry_date			)
+	values	
+			( 	:ls_memcoopid , 		:ls_insuranceno, 		:li_laststmno, 			:ldtm_receiptdate, 	:idtm_operate,		 	:ls_kpslipno, 
+				:ls_insitem,				:ldc_insperiodvalue, 	:ldc_bountyamt,		:ldc_premiumaccum, 	&#39;TMT&#39; ,					1,
+				:is_userid, 				:ldtm_entrydate	) 
+	using sqlca ;
+			  
+	if ( sqlca.sqlcode &lt;&gt; 0 ) then
+		destroy lds_insure
+		iex_exception.text += &quot;~r~nพบข้อผิดพลาดในการบันทึก Statement ประกัน #&quot;
+		iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+		iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+		iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+		return -1
+	end if
+	
+	//========&gt;End Loop เก็บ
+	ls_tempinsno		= ls_insuranceno
+	li_tmpstmseqno	= li_laststmno
+	ldc_tmpbfaccum	= ldc_premiumaccum
+	
+next	
+
+destroy lds_insure
+
+return 1
+end function</code></pre>
+            </div>
+        </div>
+    </details>
+</div>
+<div class="card">
+    <h3>ขั้นตอนที่ 8: ผ่านรายการเรียกเก็บอื่นๆ (of_post_toother)</h3>
+    <p>ประมวลยอดเรียกเก็บเบ็ดเตล็ดอื่นๆ โดยอัปเดตสะสมยอดดอกเบี้ยของสมาชิกในตาราง mbmembmaster (ตามประเภทธุรกรรมย่อย UIA/UIR) และเปลี่ยนสถานะความเคลื่อนไหวในตารางหลักประเภทเรียกเก็บอื่นๆ kprcvkeepother เป็น -1 (ตัดจ่ายสำเร็จ)</p>
+    <details>
+        <summary>คลิกเพื่อขยายซอร์สโค้ดของฟังก์ชัน of_post_toother</summary>
+        <div style="padding: 1rem;">
+            <div class="code-container">
+                <div class="code-header">
+                    <span>PowerBuilder Source: of_post_toother</span>
+                    <button class="btn-toggle" onclick="toggleCode(this)">ขยายโค้ด</button>
+                </div>
+                <pre><code>protected function integer of_post_toother ();/***********************************************************
+&lt;description&gt;
+	ประมวลผ่านรายการเรียกเก็บอื่น ๆ
+&lt;/description&gt;
+
+&lt;arguments&gt;  
+
+&lt;/arguments&gt; 
+
+&lt;return&gt; 
+	Integer	1 = success,  throwable = failure
+&lt;/return&gt; 
+
+&lt;usage&gt; 
+	Revision History:
+	Version 1.0 (Initial version) Modified Date 28/9/2010 by MiT
+	Version 2.0 (Initial version) Modified Date 24/05/2012 by Godji
+&lt;/usage&gt; 
+***********************************************************/
+string		ls_recvperiod, ls_kpslipno , ls_memcoopid
+string		ls_memno, ls_refmemno, ls_memprior, ls_refprior, ls_sqlext, ls_temp, ls_sqlexttemp
+string		ls_kpitemtype , ls_shrlontype
+string		ls_errtxt
+integer	li_rcvseqno, li_stepvalue, li_chk, li_keepstatus, li_ret
+long		ll_index, ll_count
+dec{2}	ldc_otheramt
+datetime	ldtm_entrydate , ldtm_receiptdate
+n_ds		lds_other
+
+ldtm_entrydate	= datetime( today(), now() )
+this.of_pgmessage( &quot;กำลังดึงข้อมูล...เรียกเก็บอื่น ๆ&quot; )
+
+lds_other	= create n_ds
+lds_other.dataobject	= &quot;d_kp_rcvpost_other&quot;
+lds_other.settransobject( sqlca )
+
+try
+	inv_kpsrv.of_setsqlselect( &quot;kptempreceive&quot; )
+	if inv_kpsrv.of_setsqldw( lds_other ) &lt;&gt; 1 then
+		destroy lds_other
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL สร้างรายงานงบหน้าประจำเดือน(1)&quot;
+		return -1
+	end if
+	
+	if inv_kpsrv.of_setsqldw_coop_recvperiod( lds_other , &quot;kptempreceive&quot; ) &lt;&gt; 1 then
+		destroy lds_other
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL สร้างรายงานงบหน้าประจำเดือน(2)&quot;
+		return -1
+	end if
+catch ( throwable lthw_error )
+end try
+
+if ii_chkbaldept = 1 then 
+	if this.of_set_sql_chkdpbal( lds_other , &quot;kptempreceive&quot; ) &lt;&gt; 1 then
+		destroy lds_other
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL ตรวจสอบเงินฝากคงเหลือ&quot;
+		return -1
+	end if
+end if
+
+ll_count = lds_other.retrieve()
+
+for ll_index = 1 to ll_count
+	if mod( ll_index, 100 ) = 0 then
+		if this.of_pgisstop() then
+			this.of_pgmessage( &quot;หยุดจากทำงานจากผู้ใช้ เรียกเก็บอื่น ๆ&quot; )
+			destroy lds_other
+			return 0
+		end if
+	end if
+	
+	ls_kpslipno			= lds_other.object.kpslip_no[ll_index]
+	ls_recvperiod 		= lds_other.object.recv_period[ll_index]
+	ls_memcoopid		= lds_other.object.memcoop_id[ll_index]
+	ls_memno			= trim( lds_other.getitemstring( ll_index, &quot;member_no&quot; ) )
+	ls_refmemno		= trim( lds_other.getitemstring( ll_index, &quot;ref_membno&quot; ) )
+	ls_kpitemtype		= trim( lds_other.getitemstring( ll_index, &quot;keepitemtype_code&quot; ) )
+	ls_shrlontype		= trim( lds_other.getitemstring( ll_index, &quot;shrlontype_code&quot; ) )
+	ldc_otheramt		= lds_other.getitemdecimal( ll_index, &quot;item_payment&quot; )
+	li_rcvseqno			= lds_other.getitemnumber( ll_index, &quot;seq_no&quot; )
+	li_keepstatus		= lds_other.getitemnumber( ll_index, &quot;keepitem_status&quot; )
+	ldtm_receiptdate	= lds_other.getitemdatetime( ll_index, &quot;receipt_date&quot; )
+	
+	// ผ่านรายการไป master det
+	li_ret = this.of_post_tomastdet( ls_kpslipno, li_rcvseqno, ldtm_entrydate ) 
+	if ( li_ret &lt;&gt; 1 ) then
+		return -1
+	end if
+	
+	// ถ้าเป็นรายการยกเลิกข้ามทำอันต่อไป
+	if li_keepstatus &lt;&gt; 1 then
+		continue
+	end if
+
+	//inv_progress.istr_progress.subprogress_text	= string( ll_index , &quot;#,##0&quot; ) + &quot;/&quot; + string( ll_count , &quot;#,##0&quot; ) +&quot;. ทะเบียน &quot;+ls_memno+&quot; &gt; รายการเรียกเก็บอื่น ๆ &quot;+string(ldc_otheramt, &quot;#,##0.00&quot; )
+	this.of_pgmessage( string( ll_index , &quot;#,##0&quot; ) + &quot;/&quot; + string( ll_count , &quot;#,##0&quot; ) +&quot;. ทะเบียน &quot;+ls_memno+&quot; &gt; รายการเรียกเก็บอื่น ๆ &quot;+string(ldc_otheramt, &quot;#,##0.00&quot; ) )
+	
+	// บันทีกในส่วน ด/บ สะสมของสมาชิก
+	choose case ls_kpitemtype
+		case &quot;UIA&quot;
+			update	mbmembmaster
+			set			accum_interest	= accum_interest + :ldc_otheramt
+			where	coop_id	= :ls_memcoopid
+			and		( member_no	= :ls_memno )
+			using		sqlca ;
+		case &quot;UIR&quot;
+			update	mbmembmaster
+			set			accum_interest	= accum_interest - :ldc_otheramt
+			where	coop_id	= :ls_memcoopid
+			and		( member_no	= :ls_memno )
+			using		sqlca ;
+			
+		case &quot;OTH&quot;
+			//update สถานะเก็บได้ที่ตาราง  kprcvkeepother
+			if  SQLCA.DBMS = &quot;ADO.Net&quot; then
+				
+				update kprcvkeepother
+				set keepothtype_status = -1
+				where	coop_id	= :ls_memcoopid
+				and		( member_no	= :ls_memno )
+				and 		( lastkeep_period = :ls_recvperiod )
+				and		( rtrim(keepothitemtype_code) = :ls_shrlontype )
+				using		sqlca ; 
+			
+			else
+				//========&gt;IRPC --&gt; สัญญากลุ่มที่ไม่ใช่ ATM 
+				if is_coopcontrol = &quot;084001&quot; then
+					//========&gt;IRPC --&gt;
+//					delete kprcvkeepother 
+//					where	coop_id	= :ls_memcoopid
+//					and		( member_no	= :ls_memno )
+//					and 		( lastkeep_period = :ls_recvperiod )
+//					and		( trim(keepothitemtype_code) = :ls_shrlontype )
+//					using		sqlca ; 
+					update kprcvkeepother
+					set keepothtype_status = -1
+					where	coop_id	= :ls_memcoopid
+					and		( member_no	= :ls_memno )
+					and 		( lastkeep_period = :ls_recvperiod )
+					and		( trim(keepothitemtype_code) = :ls_shrlontype )
+					using		sqlca ; 
+					
+				else
+					update kprcvkeepother
+					set keepothtype_status = -1
+					where	coop_id	= :ls_memcoopid
+					and		( member_no	= :ls_memno )
+					and 		( lastkeep_period = :ls_recvperiod )
+					and		( trim(keepothitemtype_code) = :ls_shrlontype )
+					using		sqlca ; 
+				end if
+					
+			end if
+
+//			choose case ls_shrlontype
+////				case &quot;WF&quot;
+////					update	wcrecievemonth
+////					set			carcassrecieve_amt 	= :ldc_otheramt, 
+////								carcass_date 			= :ldtm_receiptdate, 
+////								status_post				= 1
+////					where	&#39;00&#39; || branch_id		= :ls_memcoopid
+////					and		recv_period				= :is_recvperiod
+////					and		member_no				= :ls_memno
+////					and		expense_code 			= &#39;TKP&#39; 
+////					and		status_post 				= 8
+////					using		sqlca ;
+////                  case &quot;E1&quot;
+////					update	INSGROUPMASTER
+////			         set			INSPAYMENT_STATUS = &#39;1&#39;
+////			         where	( member_no	= :ls_memno )
+////			         and		( INSPAYMENT_STATUS = &#39;8&#39; )
+////			         using		sqlca ;
+////				case else
+//					// ถ้าเป็นรายการเรียกเก็บอื่นๆ ที่ไม่มีผลต่อด/บสะสมข้ามไปทำอันต่อไปเลย
+////					continue ;
+//			end choose
+	end choose
+	
+	if ( sqlca.sqlcode &lt;&gt; 0 ) then
+		if ls_kpitemtype = &quot;UIA&quot; or ls_kpitemtype = &quot;UIR&quot; then ls_errtxt = &quot;ดอกเบี้ยสะสม&quot;
+		if ls_kpitemtype = &quot;OTH&quot;  then ls_errtxt = &quot;อื่นๆ&quot;
+//		if ls_kpitemtype = &quot;OTH&quot; and ls_shrlontype = &quot;WF&quot; then ls_errtxt = &quot;ฌาปนกิจสงเคราะห์&quot;
+		destroy lds_other
+		iex_exception.text =&quot;~nพบข้อผิดพลาดในการปรับปรุงยอดของสมาชิก&quot;
+		iex_exception.text += &quot;~r~nเรื่อง &quot; + ls_errtxt
+		iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+		iex_exception.text += &quot;~r~nยอดเงิน : &quot; + string( ldc_otheramt , &quot;#,##0.00&quot; ) + &quot; บาท&quot;
+		iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+		iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+		return -1
+	end if
+next	
+
+//========&gt;IRPC : เคลีย์รายการที่ตัดยอดไม่ได้เป็นรายการยกเลิก
+if is_coopcontrol = &quot;084001&quot; then
+	update kprcvkeepother
+	set keepothtype_status = -9
+	where	coop_id	= :is_coopcontrol
+	and 		( lastkeep_period = :ls_recvperiod )
+	and		keepothtype_status &gt;= 0
+	using		sqlca ; 
+end if
+if ( sqlca.sqlcode &lt;&gt; 0 ) then
+	iex_exception.text += &quot;IR&quot; + string( sqlca.sqlcode )
+	iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+end if
+destroy lds_other
+
+return 1
+end function</code></pre>
+            </div>
+        </div>
+    </details>
+</div>
+<div class="card">
+    <h3>ขั้นตอนที่ 9: ผ่านรายการเงินคืนในใบเรียกเก็บ (of_postmoneyreturn)</h3>
+    <p>คำนวณหักกลบลดยอดดอกเบี้ยจ่ายและสะสมของสมาชิกและของสัญญาลง หากมียอดที่สหกรณ์ต้องจ่ายคืนสมาชิก และอัปเดตสถานะของข้อมูลตารางเงินรอจ่ายคืนสมาชิก mbmembmoneyreturn ให้เป็น 1 (คืนเงินสำเร็จแล้ว)</p>
+    <details>
+        <summary>คลิกเพื่อขยายซอร์สโค้ดของฟังก์ชัน of_postmoneyreturn</summary>
+        <div style="padding: 1rem;">
+            <div class="code-container">
+                <div class="code-header">
+                    <span>PowerBuilder Source: of_postmoneyreturn</span>
+                    <button class="btn-toggle" onclick="toggleCode(this)">ขยายโค้ด</button>
+                </div>
+                <pre><code>protected function integer of_postmoneyreturn ();/***********************************************************
+&lt;description&gt;
+	ประมวลผ่านรายการจ่ายคืนเงิน
+&lt;/description&gt;
+
+&lt;arguments&gt;  
+
+&lt;/arguments&gt; 
+
+&lt;return&gt; 
+	Integer	1 = success,  throwable = failure
+&lt;/return&gt; 
+
+&lt;usage&gt; 
+	
+	Revision History:
+	Version 1.0 (Initial version) Modified Date 28/9/2010 by MiT
+&lt;/usage&gt; 
+***********************************************************/
+
+string		ls_memno, ls_refmemno, ls_memprior, ls_refprior, ls_contno, ls_receiptno
+string		ls_sqlext, ls_temp, ls_sqlexttemp, ls_kpslipno
+long		ll_index, ll_count
+integer	li_seqno, li_itemseqno, li_stepvalue, li_chk, li_laststmno, li_keepstatus, li_ret
+dec{2}	ldc_intretamt, ldc_contintacc, ldc_memintacc, ldc_allintpay
+dec{2}	ldc_bfprnbal, ldc_bfintret, ldc_bfintarrear
+dec{2}	ldc_intretbal
+datetime	ldtm_receiptdate
+boolean	lb_err = false
+n_ds		lds_moneyret
+
+datetime	ldtm_entrydate
+
+ldtm_entrydate = datetime( today(), now() )
+this.of_pgmessage( &quot;กำลังดึงข้อมูล...หักคืนจำนวนเงินที่เรียกเก็บเกิน&quot; )
+
+lds_moneyret	= create n_ds
+lds_moneyret.dataobject	= &quot;d_kp_rcvpost_moneyreturn&quot;
+lds_moneyret.settransobject( sqlca )
+
+try
+	if inv_kpsrv.of_setsqldw( lds_moneyret ) &lt;&gt; 1 then
+		destroy lds_moneyret
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL รายการจ่ายเงินคืน(1)&quot;
+		return -1
+	end if
+catch ( throwable lthw_error )
+	this.of_pgerror( &quot;พบข้อผิดพลาดเงื่อนไขการดึงข้อมูล รายการจ่ายเงินคืน (1.1)&quot; )
+end try
+
+ll_count	= lds_moneyret.retrieve()
+
+for ll_index = 1 to ll_count
+	// ตรวจสอบการสั่งหยุดทำงาน
+	if mod( ll_index, 100 ) = 0 then
+		if this.of_pgisstop() then
+			this.of_pgmessage( &quot;หยุดจากทำงานจากผู้ใช้ รายการจ่ายเงินคืน&quot; )
+			destroy lds_moneyret
+			return -1
+		end if
+	end if
+	ls_kpslipno			= trim( lds_moneyret.getitemstring( ll_index, &quot;kpslip_no&quot; ) )
+	ls_memno			= trim( lds_moneyret.getitemstring( ll_index, &quot;member_no&quot; ) )
+	ls_refmemno		= trim( lds_moneyret.getitemstring( ll_index, &quot;ref_membno&quot; ) )
+	ls_contno			= trim( lds_moneyret.getitemstring( ll_index, &quot;loancontract_no&quot; ) )
+	ls_receiptno			= trim( lds_moneyret.getitemstring( ll_index, &quot;receipt_no&quot; ) )
+	li_seqno				= lds_moneyret.getitemnumber( ll_index, &quot;seq_no&quot; )
+	li_keepstatus		= lds_moneyret.getitemnumber( ll_index, &quot;keepitem_status&quot; )
+	ldc_intretamt		= lds_moneyret.getitemdecimal( ll_index, &quot;item_payment&quot; )
+	ldtm_receiptdate	= lds_moneyret.getitemdatetime( ll_index, &quot;receipt_date&quot; )
+	
+	//ldc_contintacc		= lds_moneyret.getitemdecimal( ll_index, &quot;interest_accum&quot; )
+	//ldc_memintacc		= lds_moneyret.getitemdecimal( ll_index, &quot;accum_interest&quot; )
+	//ldc_allintpay			= lds_moneyret.getitemdecimal( ll_index, &quot;intpayment_amt&quot; )
+	//ldc_bfprnbal			= lds_moneyret.getitemdecimal( ll_index, &quot;principal_balance&quot; )
+	//ldc_bfintarrear		= lds_moneyret.getitemdecimal( ll_index, &quot;interest_arrear&quot; )
+	//ldc_bfintret			= lds_moneyret.getitemdecimal( ll_index, &quot;interest_return&quot; )
+	//li_laststmno			= lds_moneyret.getitemnumber( ll_index, &quot;last_stm_no&quot; )
+	
+	if isnull( ldc_contintacc ) then ldc_contintacc = 0
+	if isnull( ldc_memintacc ) then ldc_memintacc = 0
+	if isnull( ldc_allintpay ) then ldc_allintpay = 0
+	if isnull( ldc_intretamt ) then ldc_intretamt = 0
+	if isnull( ldc_bfintret ) then ldc_bfintret = 0
+	if isnull( li_laststmno ) then li_laststmno = 0
+	if isnull( ls_contno ) then ls_contno = &#39;&#39; 
+	li_laststmno ++
+	
+	ldc_memintacc	-= ldc_intretamt
+	ldc_contintacc	-= ldc_intretamt
+	ldc_allintpay		-= ldc_intretamt
+	ldc_intretbal		= ldc_bfintret - ldc_intretamt
+	
+	if ldc_contintacc &lt; 0 then ldc_contintacc = 0
+	if ldc_allintpay &lt; 0 then ldc_allintpay = 0
+	if ldc_intretbal &lt; 0 then ldc_intretbal = 0
+	// ผ่านรายการไป master det
+	li_ret = this.of_post_tomastdet( ls_kpslipno, li_seqno, ldtm_entrydate )
+	if ( li_ret &lt;&gt;1 ) then
+		destroy lds_moneyret
+		this.of_pgerror( &quot;พบข้อผิดพลาดในการผ่านรายการ สัญญา #&quot;+ ls_contno + &quot;~n&quot; + string( sqlca.sqlcode ) + &quot;  &quot; + sqlca.sqlerrtext ) 
+		return -1
+	end if
+	
+	// ถ้าเป็นรายการยกเลิก ให้ทำการข้ามรายการทำอันต่อไป
+	if li_keepstatus &lt;&gt; 1 then
+		continue
+	end if
+	
+	this.of_pgmessage	( string(ll_index) +&quot;. ทะเบียน &quot;+ls_memno+&quot; &gt; สัญญา &quot;+ls_contno+&quot; &gt; คืนด/บ &quot;+string(ldc_intretamt,&quot;#,##0.00&quot;) )
+	
+	//===&gt;Clear mbmembmoneyreturn ตามที่เรียกเก็บ
+	if is_coopcontrol = &#39;078001&#39; then 
+		//=====&gt;สอ.กรมการแพทย์ ต้องเคลีย์ lncontmaster เพราะดึงจากมา lncontmaster
+		update lncontmaster 
+		set		interest_return		= interest_return - :ldc_intretamt
+		where loancontract_no	= :ls_contno
+		using sqlca;
+		
+		if ( sqlca.sqlcode &lt;&gt; 0 ) then
+			destroy lds_moneyret
+			this.of_pgerror( &quot;พบข้อผิดพลาดในการปรับปรุงรายการดอกเบี้ยคืนของสมาชิก #&quot; + ls_memno + &quot;~n&quot; + string( sqlca.sqlcode ) + &quot;  &quot; + sqlca.sqlerrtext )
+			return -1
+		end if
+		
+	else 
+		//=====&gt;Core 
+		/*	1.มี bug เพราะอัพเดทรายการไม่ได้เนื่องจาก key ที่เก็บอัพเดทข้อมูลไม่ได้ รอแก้ไขฃ
+			2.รอเพิ่มส่วนยิงข้อมูล mbmembmoneyreturndet
+			3.กรณีคืนตามระบบจะต้องมีเลขสัญญา
+		*/
+		if ls_contno &lt;&gt; &#39;&#39; then 
+			update mbmembmoneyreturn 
+			set		return_status	= 1,
+					ref_payoutno	= :ls_receiptno, 
+					return_id			= :is_userid, 
+					return_date		= :ldtm_receiptdate, 
+					intret_amt		= :ldc_intretbal,
+					return_balance	= 0
+			where ( member_no	= :ls_memno ) 	
+			and ( returnitemtype_code in (&#39;MRT&#39;, &#39;INT&#39;, &#39;PRN&#39;,&#39;RET&#39;) )
+			and ( return_status in (0, 8))
+			and ( trim(loancontract_no)		= :ls_contno )
+			and ( return_amt					= :ldc_intretamt )
+			using		sqlca ;
+			
+			if ( sqlca.sqlcode &lt;&gt; 0 ) then
+				destroy lds_moneyret
+				this.of_pgerror( &quot;พบข้อผิดพลาดในการปรับปรุงรายการดอกเบี้ยคืนของสมาชิก #&quot; + ls_memno + &quot;~n&quot; + string( sqlca.sqlcode ) + &quot;  &quot; + sqlca.sqlerrtext )
+				return -1
+			end if
+		else 
+			update mbmembmoneyreturn 
+			set		return_status	= 1,
+					ref_payoutno	= :ls_receiptno, 
+					return_id			= :is_userid, 
+					return_date		= :ldtm_receiptdate, 
+					intret_amt		= :ldc_intretbal,
+					return_balance	= 0
+			where ( member_no	= :ls_memno ) 	
+			and ( returnitemtype_code in (&#39;MRT&#39;, &#39;INT&#39;, &#39;PRN&#39;,&#39;RET&#39;) )
+			and ( return_status in (0, 8))
+			using		sqlca ;
+			
+			if ( sqlca.sqlcode &lt;&gt; 0 ) then
+				destroy lds_moneyret
+				this.of_pgerror( &quot;พบข้อผิดพลาดในการปรับปรุงรายการดอกเบี้ยคืนของสมาชิก #&quot; + ls_memno + &quot;~n&quot; + string( sqlca.sqlcode ) + &quot;  &quot; + sqlca.sqlerrtext )
+				return -1
+			end if
+		end if
+		
+	end if
+	
+	
+next
+
+destroy lds_moneyret
+
+return 1
+end function</code></pre>
+            </div>
+        </div>
+    </details>
+</div>
+<div class="card">
+    <h3>ขั้นตอนที่ 10: รายการหยุดเก็บที่แสดงผลเฉยๆ (of_post_todisplay)</h3>
+    <p>ประมวลผลข้อมูลสมาชิกประเภทกลุ่มหยุดเรียกเก็บชั่วคราวหรือรายการแสดงผลอย่างเดียวเพื่อเขียนลงตารางสลิปใบเสร็จรับเงินย่อยหลัก kpmastreceivedet เพื่อบันทึกประวัติการเรียกเก็บประจำเดือน</p>
+    <details>
+        <summary>คลิกเพื่อขยายซอร์สโค้ดของฟังก์ชัน of_post_todisplay</summary>
+        <div style="padding: 1rem;">
+            <div class="code-container">
+                <div class="code-header">
+                    <span>PowerBuilder Source: of_post_todisplay</span>
+                    <button class="btn-toggle" onclick="toggleCode(this)">ขยายโค้ด</button>
+                </div>
+                <pre><code>protected function integer of_post_todisplay ();/***********************************************************
+&lt;description&gt;
+	ประมวลผ่านรายการจัดเก็บอื่นๆ
+&lt;/description&gt;
+
+&lt;arguments&gt;  
+
+&lt;/arguments&gt; 
+
+&lt;return&gt; 
+	Integer	1 = success,  throwable = failure
+&lt;/return&gt; 
+
+&lt;usage&gt; 
+	Revision History:
+	Version 1.0 (Initial version) Modified Date 28/9/2010 by MiT
+	Version 2.0 (Initial version) Modified Date 24/05/2012 by Godji
+&lt;/usage&gt; 
+***********************************************************/
+string		ls_kpslipno , ls_memcoopid
+string		ls_memno, ls_refmemno, ls_memprior, ls_refprior
+integer	li_rcvseqno, li_ret
+long		ll_index, ll_count
+n_ds		lds_display
+
+datetime	ldtm_entrydate
+
+ldtm_entrydate = datetime( today(), now() )
+
+this.of_pgmessage( &quot;กำลังดึงข้อมูล...ผ่ายรายการแสดงผลพวกหยุดเก็บ&quot; )
+
+lds_display	= create n_ds
+lds_display.dataobject	= &quot;d_kp_rcvpost_display&quot;
+lds_display.settransobject( sqlca )
+
+try
+	inv_kpsrv.of_setsqlselect( &quot;kptempreceive&quot; )
+	if inv_kpsrv.of_setsqldw( lds_display ) &lt;&gt; 1 then
+		destroy lds_display
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL of_post_todisplay(1)&quot;
+		return -1
+	end if
+	
+	if inv_kpsrv.of_setsqldw_coop_recvperiod( lds_display , &quot;kptempreceive&quot; ) &lt;&gt; 1 then
+		destroy lds_display
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL of_post_todisplay(2)&quot;
+		return -1
+	end if
+catch ( throwable lthw_error )
+end try
+
+if ii_chkbaldept = 1 then 
+	if this.of_set_sql_chkdpbal( lds_display , &quot;kptempreceive&quot; ) &lt;&gt; 1 then
+		destroy lds_display
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL ตรวจสอบเงินฝากคงเหลือ&quot;
+		return -1
+	end if
+end if
+
+ll_count	= lds_display.retrieve()
+
+for ll_index = 1 to ll_count
+	
+	if mod( ll_index, 100 ) = 0 then
+		if this.of_pgisstop() then
+			this.of_pgmessage( &quot;หยุดจากทำงานจากผู้ใช้ ผ่ายรายการแสดงผลพวกหยุดเก็บ&quot; )
+			destroy lds_display
+			return 0
+		end if
+	end if
+	
+	ls_kpslipno		= lds_display.object.kpslip_no[ ll_index ]
+	ls_memcoopid	= lds_display.object.memcoop_id[ ll_index ]
+	ls_memno		= trim( lds_display.getitemstring( ll_index, &quot;member_no&quot; ) )
+	ls_refmemno	= trim( lds_display.getitemstring( ll_index, &quot;ref_membno&quot; ) )
+	li_rcvseqno		= lds_display.getitemnumber( ll_index, &quot;seq_no&quot; )
+
+	// ผ่านรายการไป master det
+	li_ret = this.of_post_tomastdet( ls_kpslipno , li_rcvseqno, ldtm_entrydate )
+	if ( li_ret &lt;&gt; 1 ) then
+		destroy lds_display
+		return -1
+	end if
+	
+	//inv_progress.istr_progress.subprogress_text	= string( ll_index , &quot;#,##0&quot; ) + &quot;/&quot; + string( ll_count , &quot;#,##0&quot; ) +&quot;. ทะเบียน &quot;+ls_memno+&quot; &gt; รายการหยุดเก็บ &quot;
+	this.of_pgmessage( string( ll_index , &quot;#,##0&quot; ) + &quot;/&quot; + string( ll_count , &quot;#,##0&quot; ) +&quot;. ทะเบียน &quot;+ls_memno+&quot; &gt; รายการหยุดเก็บ &quot; )
+	
+next	
+
+destroy lds_display
+
+return 1
+end function</code></pre>
+            </div>
+        </div>
+    </details>
+</div>
+<div class="card">
+    <h3>ขั้นตอนที่ 11: ผ่านรายการเงินฝากประจำเดือน (of_post_todetpmthcut / of_post_todept)</h3>
+    <p>ฟังก์ชัน of_post_todetpmthcut จะดึงบัญชีที่มีการหักเรียกเก็บเงินเข้าฝาก และส่งต่อไปยังฟังก์ชันย่อย of_post_todept เพื่อทำรายการหักเงินผ่านบัญชีเงินฝากอัตโนมัติ: บันทึกใบนำฝากเงินในตารางสลิปนำฝาก dpdeptslip (ประเภทรายการ DTM), บันทึกประวัติรายการบัญชีเงินฝาก dpdeptstatement, อัปเดตเงินสะสมบัญชีคงเหลือและวันทำรายการล่าสุดในตารางบัญชีเงินฝาก dpdeptmaster และตรวจสอบหากเป็นบัญชีเงินฝากประจำ จะบันทึกรายการย่อยลงตารางเงินฝากประจำ dpdeptprncfixed และประวัติ dpdeptslipdet เสมอ</p>
+    <details>
+        <summary>คลิกเพื่อขยายซอร์สโค้ดของฟังก์ชัน of_post_todetpmthcut</summary>
+        <div style="padding: 1rem;">
+            <div class="code-container">
+                <div class="code-header">
+                    <span>PowerBuilder Source: of_post_todetpmthcut</span>
+                    <button class="btn-toggle" onclick="toggleCode(this)">ขยายโค้ด</button>
+                </div>
+                <pre><code>protected function integer of_post_todetpmthcut () throws exception;string			ls_memcoopid
+string			ls_kpslipno , ls_memno
+integer		li_rcvseqno, li_chk, li_keepstatus, li_ret
+long			ll_index, ll_count
+dec{2}		ldc_feeamt
+datetime		ldtm_appwdate
+n_ds	lds_dep
+
+this.of_pgmessage( &quot;กำลังดึงข้อมูล...เงินฝากรายเดือน&quot; )
+
+lds_dep	= create n_ds
+lds_dep.dataobject	= &quot;d_kp_rcvpost_deptmaster&quot;
+lds_dep.settransobject( sqlca )
+
+
+	inv_kpsrv.of_setsqlselect( &quot;kptempreceive&quot; )
+	
+	if inv_kpsrv.of_setsqldw( lds_dep ) &lt;&gt; 1 then
+		destroy lds_dep
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL กรองข้อมูลสมาชิก(1)&quot;
+		return -1
+	end if
+	
+	if inv_kpsrv.of_setsqldw_coop_recvperiod( lds_dep , &quot;kptempreceive&quot; ) &lt;&gt; 1 then
+		destroy lds_dep
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL กรองข้อมูลสหกรณ์(2)&quot;
+		return -1
+	end if
+
+
+	lds_dep.retrieve()
+	ll_count = lds_dep.rowcount()
+	
+	for ll_index = 1 to ll_count
+	
+		// ตรวจสอบการสั่งหยุดทำงาน
+		if mod( ll_index, 100 ) = 0 then
+			if this.of_pgisstop() then
+				this.of_pgmessage( &quot;หยุดจากทำงานจากผู้ใช้ ค่าธรรมเนียมแรกเข้า&quot; )
+				destroy lds_dep
+				return 0
+			end if
+		end if
+		
+		ls_memcoopid	= trim( lds_dep.object.coop_id[ ll_index ] )
+		ls_kpslipno		= trim( lds_dep.getitemstring( ll_index, &quot;kpslip_no&quot; ) )
+		ls_memno		= trim( lds_dep.getitemstring( ll_index, &quot;member_no&quot; ) )
+		ldc_feeamt		= lds_dep.getitemdecimal( ll_index, &quot;item_payment&quot; )
+		
+		this.of_post_todept( ls_memno, idtm_receiptdate ) 
+			
+	next	
+
+
+
+destroy lds_dep
+
+return 1
+end function</code></pre>
+            </div>
+        </div>
+    </details>
+    <details>
+        <summary>คลิกเพื่อขยายซอร์สโค้ดของฟังก์ชัน of_post_todept</summary>
+        <div style="padding: 1rem;">
+            <div class="code-container">
+                <div class="code-header">
+                    <span>PowerBuilder Source: of_post_todept</span>
+                    <button class="btn-toggle" onclick="toggleCode(this)">ขยายโค้ด</button>
+                </div>
+                <pre><code>public function integer of_post_todept (string as_member_no, datetime adtm_operatedate) throws exception;string		ls_memno, ls_deptno,  ls_deptitem, ls_depttype, ls_sqlext, ls_temp, ls_sqlexttemp,ls_ref_docno, ls_message
+string		ls_entryid, ls_period, ls_start_group, ls_end_group, ls_refmemno, ls_start_deptno, ls_end_deptno
+string		ls_cashtype, ls_referapp, ls_tofromaccid, ls_depttype_groupcode, ls_machine_id
+string		ls_timedueprefer, ls_expr, ls_kpslip_no, ls_year, ls_month, ls_smembtype, ls_emembtype
+string		ls_newdeptno ,ls_olddeptno, ls_coop_control, ls_coop_id, ls_xml  // สำหรับพิจิตร 
+string		ls_member_str, ls_memb, ls_proctext, ls_membcat_code
+
+integer	li_deptmonthstatus, li_monthintpaymeth,li_upprncperiod, li_scpintrate_status, li_keep_itemstatus
+integer	li_laststmno, li_stepvalue, li_chk,li_seqno, li_groupmark, li_sequest, li_status_Pension
+integer	li_monthdue, li_max_prnc, li_calintmrth, li_member_status, li_rc, li_member_type, li_member_flag
+
+long		ll_index, ll_count, li_closestatus, ll_rowsent
+dec{2}	ldc_balance,ldc_withdrawable, ldc_intarrear_amt
+dec{2}	ldc_temp ,ldc_pmon
+dec{2}  	ldc_balance_temp ,    ldc_withdrawable_temp , ldc_doperate_bal_temp 
+dec{2}	ldc_balance_calint, ldc_mincalint, ldc_chqpend
+dec{5}	ldc_spcintrate, ldc_accuint_amt, ldc_interest
+dec{5}	ldc_newintrate
+
+datetime	ldtm_prncdue
+datetime	ldtm_operatedate,ldtm_pmon, ldtm_lastacc, ldtm_addtostmdue,ldtm_lastcalint_date,ldtm_calintto,ldtm_calintfrom
+datetime	ldtm_entrydate, ldtm_operate_time
+long		li_count, ll_rc
+long		ll_rownewrate
+
+n_ds 		lds_dept
+
+this.of_pgmessage( &quot;กำลังดึงข้อมูล...รายการเงินฝาก&quot; )
+
+ls_coop_control 		= istr_process.coop_control
+ls_coop_id				= istr_process.coop_id
+ls_xml					= istr_process.arg1
+
+			
+ls_newdeptno	= &#39;New&#39;  // กรณี 1 บัญชีมีการทำรายการมากกว่า 1 รายการ  ใช้ทีพิจิตร
+ls_olddeptno 	= &#39;Old&#39;    // กรณี 1 บัญชีมีการทำรายการมากกว่า 1 รายการ  ใช้ทีพิจิตร
+
+ldtm_operate_time = datetime( today(),now() )
+ldtm_entrydate		= adtm_operatedate
+		
+lds_dept	= create n_ds
+lds_dept.dataobject	= &quot;d_dep_kprcvpost_tokeep&quot;
+lds_dept.settransobject( sqlca )
+
+ll_count			= lds_dept.retrieve( as_member_no )
+
+//if ll_count &lt; 0 then 
+//	ithw_exception.text = &quot;ประมวลผล  ไม่สามารถถึงข้อมูลมาประมวลผล ได้~r~n&quot; + sqlca.sqlerrtext 
+//	destroy 	lds_dept
+//	rollback using sqlca ;
+//	throw ithw_exception
+//end if
+
+this.of_pgstep( 1, 1 )
+
+for ll_index = 1 to ll_count
+	li_count = 0
+	// ตรวจสอบการสั่งหยุดทำงาน
+	yield()
+	
+	ls_kpslip_no				= trim( lds_dept.getitemstring( ll_index, &quot;kpslip_no&quot; ) )
+	ls_memno				= trim( lds_dept.getitemstring( ll_index, &quot;member_no&quot; ) )
+	ls_refmemno			= trim( lds_dept.getitemstring( ll_index, &quot;ref_membno&quot; ) )
+	ls_deptno				= trim( lds_dept.getitemstring( ll_index, &quot;loancontract_no&quot;))
+	ls_depttype				= trim( lds_dept.getitemstring( ll_index, &quot;depttype_code&quot; ) )
+	li_laststmno				= lds_dept.getitemnumber( ll_index, &quot;laststmseq_no&quot; )
+	ldc_balance				= lds_dept.getitemdecimal( ll_index, &quot;prncbal&quot; )
+	ldc_withdrawable		= lds_dept.getitemdecimal( ll_index, &quot;withdrawable_amt&quot; )
+	//ldc_doperate_bal		= lds_dept.getitemdecimal( ll_index, &quot;doperate_bal&quot; )
+	ldc_pmon				= lds_dept.getitemdecimal( ll_index, &quot;item_payment&quot; )
+	li_closestatus			= lds_dept.getitemnumber( ll_index, &quot;deptclose_status&quot; )
+	li_sequest				= lds_dept.getitemnumber( ll_index, &quot;sequest_status&quot; )
+	li_seqno					= lds_dept.getitemnumber( ll_index, &quot;seq_no&quot; )
+	ldtm_lastcalint_date	= lds_dept.getitemdatetime( ll_index, &quot;lastcalint_date&quot; )
+	ldc_accuint_amt		= lds_dept.getitemdecimal( ll_index, &quot;accuint_amt&quot; )
+	ldc_intarrear_amt		= lds_dept.getitemdecimal( ll_index, &quot;intarrear_amt&quot; )
+	ldc_spcintrate			= lds_dept.getitemdecimal( ll_index, &quot;spcint_rate&quot; )
+	li_scpintrate_status	= lds_dept.getitemdecimal( ll_index, &quot;spcint_rate_status&quot; )
+	ldc_chqpend				= lds_dept.getitemdecimal( ll_index, &quot;checkpend_amt&quot; )
+	li_keep_itemstatus		= lds_dept.getitemdecimal( ll_index, &quot;keepitem_status&quot; )
+	ls_entryid				= is_userid
+	ldtm_addtostmdue		= ldtm_entrydate//lds_tran.getitemdatetime( 1, &quot;adtm_operatedate&quot; ) //วันที่  ทบต้น
+	ldtm_operatedate		= ldtm_entrydate//lds_tran.getitemdatetime( 1, &quot;adtm_operatedate&quot; )
+	ldtm_pmon				= ldtm_entrydate//lds_tran.getitemdatetime( 1, &quot;adtm_operatedate&quot; ) //วันที่ทบต้นดอกเบี้ยตามระบบปิดงาน
+	ldtm_calintfrom 		= ldtm_lastcalint_date
+	ldtm_calintto			= ldtm_entrydate//lds_tran.getitemdatetime( 1, &quot;adtm_operatedate&quot; ) 
+	ls_membcat_code		= lds_dept.getitemstring( ll_index , &quot;membcat_code&quot;)
+	
+	
+	ls_depttype_groupcode	=  string( inv_deptsrv.of_getattribdeposittype( ls_depttype, &quot;deptgroup_code&quot;,&quot;string&quot;, ls_membcat_code ) )
+	
+	if isnull( ls_depttype_groupcode ) or ls_depttype_groupcode = &#39;&#39; then
+		
+		select 	deptgroup_code
+		into		:ls_depttype_groupcode
+		from 		dpdepttype
+		where 	coop_id 			= :ls_coop_control
+		and		depttype_code	= :ls_depttype
+		and		membcat_code = :ls_membcat_code
+		using sqlca ;
+		
+		if sqlca.sqlcode &lt;&gt; 0 then
+			iex_exception.text += &quot;ประมวลผล หา deptgroup_code of_post_todept &quot; + sqlca.sqlerrtext 
+			destroy 	lds_dept
+			rollback using sqlca ;
+			throw iex_exception
+		end if
+		
+	end if
+	
+	if isnull(ldc_chqpend) 				then ldc_chqpend = 0
+	if isnull(ldc_spcintrate) 			then ldc_spcintrate = 0
+	if isnull(li_scpintrate_status) 	then li_scpintrate_status = 0
+	if isnull(li_laststmno) 				then li_laststmno = 0
+	if isnull(li_sequest) 				then li_sequest = 0
+	if isnull(li_closestatus) 			then li_closestatus = 0
+//	if isnull(ldc_doperate_bal) 		then ldc_doperate_bal = 0
+	if isnull(ldc_balance) 				then ldc_balance = 0
+	if isnull(ldc_pmon) 				then ldc_pmon = 0  //ยอดฝากรายเดือน
+	if isnull(ldc_accuint_amt) 		then ldc_accuint_amt = 0 
+	if isnull(ldc_intarrear_amt) 		then ldc_intarrear_amt = 0 
+	
+	ll_rowsent = mod( ll_index, 50 )
+	if ll_rowsent = 0 then
+		this.of_pgmessage( string( ll_index ) + &quot;/&quot; + string( ll_count ) + &quot; ทะเบียน:: &quot; + ls_memno + &quot; เลขที่บัญชี &quot; + ls_deptno + &quot; จำนวนเงินฝาก:: &quot; + string ( ldc_pmon,&quot;#,##0.00&quot;) )
+	end if
+	
+	// by num ตรวจสอบว่ามียอดเงินที่จะให้ทำรายการหรือไม่
+	if ( ldc_pmon ) &gt; 0 and ( li_keep_itemstatus = 1  ) then 		
+
+		ls_newdeptno	= ls_deptno  //  กรณี 1 บัญชีมีการทำรายการมากกว่า 1 รายการ  ใช้ที่พิจิตร
+		
+		if ls_newdeptno = ls_olddeptno then
+			li_count			= li_count + 1 // เพิ่มเพื่อรอบต่อไป
+			li_laststmno		= li_laststmno + li_count
+			ldtm_calintfrom	= ldtm_entrydate//lds_tran.getitemdatetime( 1, &quot;adtm_operatedate&quot; ) // เพื่อการคิดดอกเบี้ย
+		else
+			li_count 						= 0
+			ldc_balance_temp			= 0
+			ldc_withdrawable_temp	= 0
+			ldc_doperate_bal_temp	= 0
+		end if
+		
+	ldc_mincalint	= dec( inv_deptsrv.of_getattribdeposittype( ls_depttype, &quot;minprncbalnormint&quot;,&quot;decimal&quot;, ls_membcat_code ) )
+		
+	
+		if isnull( ldc_mincalint ) then ldc_mincalint = 0
+		
+		ls_olddeptno		= ls_newdeptno    // เพื่อ ใช้ Check รอบต่อไป		
+		ldc_balance_calint	= ldc_balance
+		
+		// ดึงว่ามีระยะการฝากหรือไม่
+		ll_rc	= integer( inv_deptsrv.of_getattribdeposittype( ls_depttype, &quot;timedue_flag&quot;,&quot;integer&quot;, ls_membcat_code ) )
+		if isnull( ll_rc ) then ll_rc = 0
+		
+		// หากมีระยะการฝาก
+		if ll_rc = 1 then
+			// จำนวนเดือนฝาก
+			li_monthdue	= integer( inv_deptsrv.of_getattribdeposittype( ls_depttype, &quot;f_minmonth_period&quot;,&quot;integer&quot;, ls_membcat_code ) )
+			if isnull( li_monthdue ) then li_monthdue = 0
+			
+			// ถ้ามีกำหนด และที่ Master
+			ls_timedueprefer	= string( inv_deptsrv.of_getattribdeposittype( ls_depttype, &quot;timedue_prefer&quot;,&quot;string&quot;, ls_membcat_code ) )
+			if isnull( ls_timedueprefer ) then ls_timedueprefer = &quot;F&quot;
+			
+			// วันคำนวณดอกเบี้ยล่าสุด
+			ldtm_lastcalint_date	= ldtm_pmon
+			
+			// หากดูครบกำหนดที่ Master
+			if ( ls_timedueprefer = &quot;M&quot; ) then
+				select		end_date
+				into		:ldtm_prncdue
+				from		dpdeptmasdue
+				where	deptaccount_no	= :ls_deptno and
+							coop_id				= :ls_coop_control and 
+							still_use				= &#39;Y&#39;  
+				using sqlca ;
+							
+				if isnull( ldtm_prncdue ) then
+					ldtm_prncdue		= datetime( inv_datetime.of_relativemonth( date( ldtm_pmon ), li_monthdue ) )
+				end if
+				
+				ldtm_lastcalint_date	= inv_deptsrv.of_findlastcalintdate( ls_deptno, ls_coop_control, ldtm_pmon ) 
+				ldtm_calintto			= ldtm_lastcalint_date
+				
+			else
+				// วันครบกำหนด
+				ldtm_prncdue			= datetime( inv_datetime.of_relativemonth( date( ldtm_pmon ), li_monthdue ) )
+			end if
+			
+		end if
+		// ============ จบ กรณีมีกำหนด ที่ Master =================
+
+		ldc_interest			= 0.00		
+		ldc_accuint_amt	= ldc_accuint_amt + ldc_interest
+		
+		if li_count = 0 then
+			ldc_balance_temp			= ldc_balance + ldc_pmon
+			ldc_withdrawable_temp	= ldc_withdrawable + ldc_pmon  
+			ldc_doperate_bal_temp	= ldc_balance + ldc_pmon//ยอดดอกเบี้ยที่เกิดขึ้นในเดือนนี้   */
+		else
+			ldc_balance_temp			= ldc_balance_temp + ldc_pmon
+			ldc_withdrawable_temp 	= ldc_withdrawable_temp + ldc_pmon  
+			ldc_doperate_bal_temp 	= ldc_doperate_bal_temp + ldc_pmon//ยอดดอกเบี้ยที่เกิดขึ้นในเดือนนี้   */
+		end if		
+
+		li_laststmno ++
+
+		// บันทึกลง Slip
+		li_max_prnc		= 0
+	
+		ls_ref_docno	= inv_docservice.of_getnewdocno( ls_coop_control , &quot;DPSLIPNO&quot; ) 	
+		
+		ls_deptitem 		= &#39;DTM&#39;
+			
+		ls_cashtype		= &quot;TRN&quot; 
+		ls_referapp		= &#39;KEP&#39;
+		ls_tofromaccid	= string( inv_deptsrv.of_getattribdeposittype( ls_depttype, &quot;account_id&quot;,&quot;string&quot;, ls_membcat_code ) )
+
+		if isnull( ls_tofromaccid ) then ls_tofromaccid = &quot;&quot;
+		
+		this.of_pgmessage( string( ll_index ) + &quot;/&quot; + string( ll_count ) + &quot; ทะเบียน:: &quot; + ls_memno + &quot; เลขที่บัญชี:: &quot; + ls_deptno + &quot; จำนวนเงินฝาก:: &quot; + string ( ldc_pmon,&quot;#,##0.00&quot;) )
+		
+		insert into dpdeptslip
+		(	deptslip_no,						deptaccount_no,		depttype_code,			deptslip_date,
+			recppaytype_code,				deptslip_amt,			prncbal,					withdrawable_amt,
+			entry_id,							entry_date,				machine_id,				deptitemtype_code,
+			dpstm_no,						item_status,				calint_from,				calint_to,
+			deptgroup_code,				tofrom_accid,			refer_app,				refer_slipno,
+			cash_type,						int_amt,					coop_id,					tax_amt,					
+			due_flag,							deptslip_netamt,		deptcoop_id,			membcat_code
+		)
+		values
+		(	:ls_ref_docno,					:ls_deptno,				:ls_depttype,			:ldtm_entrydate,
+			:ls_deptitem,					:ldc_pmon,				:ldc_balance_temp,	:ldc_withdrawable_temp,
+			:ls_entryid,						:ldtm_entrydate,		:ls_machine_id,		:ls_deptitem,
+			:li_laststmno,					1,							:ldtm_calintfrom,		:ldtm_calintto,
+			:ls_depttype_groupcode,		:ls_tofromaccid,		:ls_referapp,			:ls_kpslip_no,
+			:ls_cashtype,					:ldc_interest,			:ls_coop_id,				0,							
+			0,									:ldc_pmon,				:ls_coop_control,		:ls_membcat_code
+		)  using sqlca ;
+
+		if sqlca.sqlcode &lt;&gt; 0 then
+			iex_exception.text += &quot;ประมวลผล พบข้อผิดพลาด ไม่สามารถทำการบันทึกลง dpdeptslip ได้ &quot; + sqlca.sqlerrtext 
+			destroy 	lds_dept
+			rollback using sqlca ;
+			throw iex_exception
+		end if
+
+		// หากเป็นเงินฝากกลุ่มประจำ
+		if ls_depttype_groupcode = &#39;01&#39; then
+			
+			ldc_newintrate = inv_deptsrv.of_get_rateint( ls_depttype, ldtm_pmon, ldc_pmon, ls_coop_control, ls_membcat_code )
+		
+			select		max( prnc_no )
+			into		:li_max_prnc
+			from		dpdeptprncfixed
+			where		deptaccount_no	= :ls_deptno
+			and		 coop_id				= :ls_coop_control 
+			using 		sqlca ;
+
+			if isnull( li_max_prnc ) then li_max_prnc = 0
+
+			li_calintmrth		= 0			 
+			li_max_prnc ++
+
+			insert into dpdeptprncfixed
+			(	deptaccount_no,			prnc_no,						prnc_amt,					prnc_date,
+				prncdue_date,				lastcalint_date,				lastacess_date,				interest_rate,
+				prnc_bal,						firstprnc_date,				calint_meth,					coop_id,						
+				prncdue_nmonth,			intarr_amt,					intpay_amt,					taxpay_amt,								
+				int_bf_accyear,				int_cur_accyear,			int_remain,					prncfixed_status,			
+				upint_time,					refer_prnc_no				
+			)
+			values
+			(	:ls_deptno,					:li_max_prnc,				:ldc_pmon,				:ldtm_pmon,
+				:ldtm_prncdue,				:ldtm_pmon,				:ldtm_pmon,			:ldc_newintrate,
+				:ldc_pmon,					:ldtm_pmon,				:li_calintmrth,			:ls_coop_control,			
+				0,								0,								0,							0,										
+				0,								0,								0,							1,								
+				1,								:li_max_prnc
+			)  using sqlca ;
+
+			if sqlca.sqlcode &lt;&gt; 0 then
+				iex_exception.text += &quot;ประมวลผล พบข้อผิดพลาด ไม่สามารถทำการบันทึกลง dpdeptprncfixed  ได้ &quot; + sqlca.sqlerrtext
+				destroy 	lds_dept
+				rollback using sqlca ;
+				throw iex_exception
+			end if
+			
+			if ls_timedueprefer = &#39;M&#39; then
+				inv_deptsrv.of_update_masdue( ls_deptno, ls_deptitem, ls_coop_control, ldtm_prncdue, li_max_prnc, ls_membcat_code, ldc_pmon )
+				
+			end if
+			
+			//by num ต้องยิง  DPDEPTSLIPDET ไว้ย้อนรายการ
+				INSERT INTO DPDEPTSLIPDET  
+				(	DEPTSLIP_NO,   				COOP_ID,   							PRNC_NO,   						PRNC_BAL,   
+					PRNC_AMT,						PRNC_DATE,						CALINT_FROM,   				PRNCDUE_DATE,   			
+					PRNCDUE_NMONTH,			INTARR_AMT,   					INTPAY_AMT,   				TAXPAY_AMT,   				
+					INTEREST_RATE,   		 	INTBF_ACCYEAR,					REFER_PRNC_NO						
+					)  
+				VALUES
+				(	:ls_ref_docno,					:ls_coop_id,							:li_max_prnc,					:ldc_pmon,
+					:ldc_pmon,						:ldtm_pmon,						:ldtm_pmon,					:ldtm_prncdue,					
+					0,									0,										0,									0,									
+					:ldc_newintrate,				0.00,									:li_max_prnc	
+				)  using sqlca ;
+				
+			
+				if sqlca.sqlcode &lt;&gt;  0 then
+					iex_exception.text += &quot;ไม่สามารถบันทึกข้อมูล รายการทำรายการย่อยได้ &quot; + sqlca.Sqlerrtext 
+					destroy 	lds_dept
+					rollback using sqlca ;
+					throw iex_exception
+				end if
+			
+
+		end if
+
+		// บันทึกลง Statement				
+		INSERT INTO DPDEPTSTATEMENT
+		(	DEPTACCOUNT_NO,				SEQ_NO,							DEPTITEMTYPE_CODE,   
+			OPERATE_DATE,					DEPTITEM_AMT,				BALANCE_FORWARD,				
+			PRNCBAL,							PRNC_NO,						TAX_AMT,							
+			INT_AMT,							ACCUINT_AMT,					RETINT_AMT,						
+			ITEM_STATUS,						PRNTOPB_STATUS,   			ENTRY_ID,
+			ENTRY_DATE,						CALINT_FROM,   				CALINT_TO,							
+			coop_id,								CASH_TYPE, 					MACHINE_ID,					
+			NO_BOOK_FLAG,					CHEQUE_PENDING,			REF_SEQ_NO,					   
+			operate_time,						deptslip_no
+		)  
+		values	
+		(	:ls_deptno,							:li_laststmno,					:ls_deptitem,
+			:ldtm_pmon,						:ldc_pmon,						:ldc_balance,						
+			:ldc_balance_temp,				:li_max_prnc,					0,										
+			:ldc_interest,						:ldc_accuint_amt,				0,										
+			1,										0,									:ls_entryid,
+			:ldtm_entrydate,					:ldtm_calintfrom,				:ldtm_calintto,						
+			:ls_coop_control,					:ls_cashtype,					:ls_machine_id,				
+			0,										:ldc_chqpend,					null,								
+			:ldtm_operate_time,				:ls_ref_docno
+		) using sqlca ;
+
+		if sqlca.sqlcode &lt;&gt; 0 then
+			iex_exception.text += &quot;ประมวลผล  ไม่สามารถทำการบันทึกลง dpdeptstatement ได้ &quot; + sqlca.sqlerrtext 
+			destroy 	lds_dept
+			rollback using sqlca ;
+			throw iex_exception
+		end if
+		
+		// บันทึกรายละเอียดลงทะเบียนเงินฝาก
+		 update	dpdeptmaster
+		 set		prncbal					= :ldc_balance_temp,
+		 			withdrawable_amt		= :ldc_withdrawable_temp ,
+					accuint_amt				= :ldc_accuint_amt,
+					lastcalint_date 			= :ldtm_calintto, 
+					lastaccess_date		= :ldtm_operatedate,
+					laststmseq_no			= :li_laststmno,
+					lastmovement_date	= :ldtm_addtostmdue,
+					prnc_no					= :li_max_prnc
+		 where	deptaccount_no		= :ls_deptno
+		and		coop_id					= :ls_coop_control  
+		using 		sqlca ;
+
+		 if sqlca.sqlcode &lt;&gt; 0 then
+			iex_exception.text += &quot;พบข้อผิดพลาด ไม่สามารถปรับปรุง dpdeptmaster 2 ได้&quot;+ sqlca.sqlerrtext 
+			destroy 	lds_dept
+			rollback using sqlca ;
+			throw iex_exception
+		end if
+
+else // by num ตรวจสอบว่ามียอดเงินที่จะให้ทำรายการหรือไม่
+		li_keep_itemstatus		= -99
+end if
+	
+//====================ผ่านรายการไปยังตาราง master==================
+
+	select		count( member_no )
+	into		:li_count
+	from		kpmastreceive
+	where		kpslip_no 	= :ls_kpslip_no
+	and 		coop_id		= :ls_coop_control
+	using 		sqlca ; 
+
+	
+	if li_count = 0 or isnull( li_count ) then
+		
+	insert into kpmastreceive
+		( 	coop_id, 					kpslip_no, 				memcoop_id, 			member_no, 			recv_period, 		refmemcoop_id, 		
+			ref_membno, 			membtype_code,	 	department_code, 	membgroup_code, 	process_date,  
+			receipt_no, 				receipt_date,			operate_date, 			sharestkbf_value, 		sharestk_value, 	interest_accum, 
+			keeping_status, 		receive_amt, 			money_text ) 
+	select 
+			coop_id, 					kpslip_no, 				memcoop_id, 			member_no, 			recv_period, 		refmemcoop_id, 		
+			ref_membno, 			membtype_code, 		department_code, 	membgroup_code, 	process_date,
+			receipt_no, 				receipt_date, 			operate_date, 			sharestkbf_value, 		sharestk_value, 	interest_accum, 
+			keeping_status,			receive_amt, 			money_text 
+	from 	kptempreceive 
+	where coop_id  = :ls_coop_control
+	and		kpslip_no 	= :ls_kpslip_no
+	using 		sqlca ;
+		
+		if sqlca.sqlcode &lt;&gt; 0 then
+			iex_exception.text += &quot;ประมวลผล พบข้อผิดพลาด ไม่สามารถปรับปรุงข้อมูล ใน kpmastreceive ได้ 2 &quot; + sqlca.sqlerrtext
+			destroy 	lds_dept
+			rollback using sqlca ;
+			throw iex_exception
+		end if
+end if
+//==========================จบ ผ่านรายการไปยังตาราง master==================
+
+//========================= ปรับปรุงสถานะการผ่านรายการ =====================
+
+// บันทึกการผ่านรายการ
+	if li_keep_itemstatus &lt;&gt; - 99 then 
+		update	kptempreceivedet
+		set			posting_status	= 1,
+					posting_date	= :ldtm_entrydate
+		where	kpslip_no 		= :ls_kpslip_no
+		and		coop_id			= :ls_coop_control
+		and		seq_no			= :li_seqno 
+		using 		sqlca ;
+		
+		if sqlca.sqlcode &lt;&gt; 0 then
+			iex_exception.text += &quot;ประมวลผล พบข้อผิดพลาด ไม่สามารถปรับปรุงข้อมูล ใน kptempreceivedet ได้ 2 &quot; + sqlca.sqlerrtext
+
+			destroy 	lds_dept
+			rollback using sqlca ;
+			throw iex_exception
+		end if
+	end if
+
+
+	
+
+		insert into kpmastreceivedet
+		(		member_no, 			recv_period, 			ref_membno, 			seq_no, 					keepitemtype_code, 
+				shrlontype_code, 		item_seqno,				loancontract_no, 		description, 				period, 
+				principal_payment, 	interest_payment, 		intarrear_payment, 	item_payment, 			calintfrom_date, 		
+				calintto_date, 			principal_period, 		interest_period, 		bfprinbalance_amt,	bfperiod, 				
+				bflastcalint_date, 		bflastpay_date, 		bfinterest_arrear, 		bfintmonth_arrear, 	bfcontract_status, 		
+				keepitem_status, 		posting_date, 			cancel_id, 				cancel_date, 			coop_id,					
+				kpslip_no,				memcoop_id)
+		select	member_no, 			recv_period, 			ref_membno, 			seq_no, 					keepitemtype_code, 
+				shrlontype_code, 		item_seqno,				loancontract_no, 		description, 				period, 
+				principal_payment, 	interest_payment, 		intarrear_payment, 	item_payment, 			calintfrom_date, 		
+				calintto_date, 			principal_period, 		interest_period, 		bfprinbalance_amt,	bfperiod, 				
+				bflastcalint_date, 		bflastpay_date, 		bfinterest_arrear, 		bfintmonth_arrear, 	bfcontract_status,	 			
+				keepitem_status, 		posting_date, 			cancel_id, 				cancel_date, 			coop_id,					
+				kpslip_no,				memcoop_id
+		from	kptempreceivedet
+		where	kpslip_no 		= :ls_kpslip_no
+		and		seq_no			= :li_seqno 
+		using 		sqlca ;
+	
+		if sqlca.sqlcode &lt;&gt; 0 then
+			iex_exception.text +=&quot;ประมวลผล พบข้อผิดพลาด ไม่สามารถปรับปรุงข้อมูล ใน kpmastreceivedet ได้ 2 &quot; + sqlca.sqlerrtext 
+
+			destroy 	lds_dept
+			rollback using sqlca ;
+			throw iex_exception
+		end if
+		
+
+//========================= ปรับปรุงสถานะการผ่านรายการ =====================	
+
+next
+
+
+	destroy 	lds_dept
+
+//commit using sqlca ;
+//this.of_pgfinish()
+
+return 1
+end function</code></pre>
+            </div>
+        </div>
+    </details>
+</div>
+<div class="card">
+    <h3>ขั้นตอนที่ 12: ลบหัวใบเสร็จเรียกเก็บที่ไม่มีความเคลื่อนไหว (of_del_mast)</h3>
+    <p>ลบข้อมูลขยะหลังตัดยอดเสร็จสิ้น โดยทำการลบข้อมูลหัวใบเสร็จรับเงินในตารางใบเสร็จรับเงินหลัก kpmastreceive ที่ไม่พบลำดับรายละเอียดธุรกรรมการจ่ายเงินใดๆ ในตารางรายละเอียด kpmastreceivedet และสำหรับ สอ.กฟผ. (EGAT) จะบันทึกการส่งผ่านรายการบัญชีโดยอัปเดตฟิลด์ trantovc_date ในรายละเอียดใบเสร็จ</p>
+    <details>
+        <summary>คลิกเพื่อขยายซอร์สโค้ดของฟังก์ชัน of_del_mast</summary>
+        <div style="padding: 1rem;">
+            <div class="code-container">
+                <div class="code-header">
+                    <span>PowerBuilder Source: of_del_mast</span>
+                    <button class="btn-toggle" onclick="toggleCode(this)">ขยายโค้ด</button>
+                </div>
+                <pre><code>public function integer of_del_mast ();/***********************************************************
+&lt;description&gt;
+	ลบข้อมูล kpmastreceive ที่ยังไม่มีการทำรายการ
+&lt;/description&gt;
+
+&lt;arguments&gt;  
+
+&lt;/arguments&gt; 
+
+&lt;return&gt; 
+	Integer	1 = success,  throwable = failure
+&lt;/return&gt; 
+
+&lt;usage&gt; 
+	
+	Revision History:
+	Version 1.0 (Initial version) Modified Date 09/05/2012 by Godji
+&lt;/usage&gt; 
+***********************************************************/
+delete from kpmastreceive
+where not exists 
+	(	select 	1 
+		from 		kpmastreceivedet 
+		where	kpmastreceive.kpslip_no = kpmastreceivedet.kpslip_no 
+		and		kpmastreceive.coop_id = kpmastreceivedet.coop_id )
+and	kpmastreceive.coop_id = :is_coopcontrol
+and	kpmastreceive.recv_period = :is_recvperiod
+using sqlca;
+
+if sqlca.sqlcode &lt;&gt; 0 then
+	iex_exception.text	+= &quot;~r~nลบข้อมูลใบเสร็จเรียกเก็บประจำเดือน(Kpmastreceive) พบข้อผิดพลาด&quot;
+	iex_exception.text	+= &quot;~r~nกรุณาตรวจสอบ&quot;
+	iex_exception.text	+= &quot;~r~n&quot; + string( sqlca.sqlcode )
+	iex_exception.text	+= &quot;~r~n&quot;+sqlca.sqlerrtext
+	return -1
+end if
+
+if is_coopcontrol = &#39;065001&#39; then
+	
+	//=====&gt;Update kpmastreceivedet.trantovc_date
+	update kpmastreceivedet
+	set trantovc_date		= :idtm_operate
+	where coop_id 			= :is_coopcontrol
+	and recv_period		= :is_recvperiod
+	and posting_status		= 1
+	and trantovc_date is null
+	using sqlca;
+	
+	if sqlca.sqlcode &lt;&gt; 0 then
+		iex_exception.text	+= &quot;~r~nอัปเดตวันที่ผ่านรายการบัญชี (Kpmastreceivedet) พบข้อผิดพลาด&quot;
+		iex_exception.text	+= &quot;~r~nกรุณาตรวจสอบ&quot;
+		iex_exception.text	+= &quot;~r~n&quot; + string( sqlca.sqlcode )
+		iex_exception.text	+= &quot;~r~n&quot;+sqlca.sqlerrtext
+		return -1
+	end if
+	
+end if
+
+return 1
+end function</code></pre>
+            </div>
+        </div>
+    </details>
+</div>
+<div class="card">
+    <h3>ขั้นตอนที่ 13 และ 14: การยกเลิกและปรับปรุงยอดค้างรับกรณีเงินเดือนไม่พอหัก</h3>
+    <p>กรณีเกิดข้อผิดพลาดในการหักเงินเดือนหรือเงินไม่พอชำระหนี้สินและมีการตั้งเงื่อนไขปรับปรุงเรียกเก็บอัตโนมัติ (ii_mnenoughflg = 1):
+1. กรณียกเลิกสลิปทั้งใบ (of_post_tocancelall): สำหรับสมาชิกที่หักเงินไม่ได้เลย ระบบจะสร้างสลิปยกเลิกเรียกเก็บลงตารางสลิปปรับปรุง slslipadjust และ slslipadjustdet (สาเหตุ '001'), ปรับปรุงสถานะใบเสร็จหลักและย่อยให้มีรหัสยกเลิก (keeping_status = -9), คืนยอดสะสมในตาราง Master เงินกู้/หุ้น/ประกัน ให้กลับมามียอดคงค้างและงวดเดิม และตั้งยอดค้างชำระลงตารางติดตามหนี้สิน kparrearreceive
+2. กรณีเก็บยอดได้บางส่วน (of_post_tocancelpartial): ทำงานคล้ายคลึงกันแต่ปรับปรุงยกเลิกบางรายการย่อยที่มีสถานะเก็บไม่ได้ ปรับคืนค่าสะสมในตาราง Master ด้วยยอดส่วนต่างที่ไม่พอหัก และตั้งค้างชำระส่วนต่างนั้นลงตาราง kparrearreceive เพื่อติดตามชำระงวดถัดไป</p>
+    <details>
+        <summary>คลิกเพื่อขยายซอร์สโค้ดของฟังก์ชัน of_post_tocancelall</summary>
+        <div style="padding: 1rem;">
+            <div class="code-container">
+                <div class="code-header">
+                    <span>PowerBuilder Source: of_post_tocancelall</span>
+                    <button class="btn-toggle" onclick="toggleCode(this)">ขยายโค้ด</button>
+                </div>
+                <pre><code>public function integer of_post_tocancelall () throws exception;/***********************************************************
+&lt;description&gt;
+	ประมวลยกเลิกรายการเรียกเก็บทั้งหมด
+&lt;/description&gt;
+&lt;return&gt; 
+	Integer	1 = success,  throwable = failure
+&lt;/return&gt; 
+&lt;usage&gt; 
+	Revision History:
+	Version 1.0 (Initial version) Date 01/01/2020
+&lt;/usage&gt; 
+***********************************************************/
+datetime		ldtm_entrydate, ldtm_receiptdate, ldtm_lastcalint, ldtm_lastprocdt, ldtm_canceldate, ldtm_calintto
+long			ll_count, ll_index
+integer		li_ret, li_seqno, li_lastperiod, li_laststmno, li_atmflag, li_bflastperiod, li_contstatus, li_pxafterkepmth, li_period
+integer		li_bfcontract, li_resign, li_seqnoret, li_keepitemstatus
+decimal		ldc_receiveamt, ldc_shrstkamt, ldc_shrarramt, ldc_shrarrpayamt, ldc_bfshrarramt, ldc_shrarrpay
+decimal		ldc_bfprnbal, ldc_bfintarr, ldc_bfintmth, ldc_wtdbal, ldc_bfintreturn, ldc_bfprnret, ldc_bfprnarrear, ldc_prnbal, ldc_intarrbal, ldc_intarrmthbal
+decimal		ldc_premacc, ldc_premarrear,  ldc_prinbal, ldc_unitshare, ldc_shrstkvalue
+decimal		ldc_prinpay, ldc_intpay, ldc_intarrpay, ldc_itempayment, ldc_realpay
+string			ls_adjslipno, ls_temp, ls_sqlext, ls_recvperiod, ls_lncontno, ls_receiptno, ls_slipdoc_no, ls_slipno
+string			ls_primemno, ls_memno, ls_kpslipno, ls_kepitemtype, ls_shrlontype, ls_sharetype, ls_description, ls_prelncontno
+n_ds	lds_cclall
+
+ldtm_entrydate		= datetime( today(), now() )
+ldtm_canceldate	= idtm_operate
+this.of_pgmessage( &quot;กำลังดึงข้อมูลรายการ.....ยกเลิกใบเสร็จประจำเดือน&quot; )
+
+lds_cclall	= create n_ds
+lds_cclall.dataobject	= &quot;d_kp_rcvpost_cancelall&quot;
+lds_cclall.settransobject( sqlca )
+
+try
+	inv_kpsrv.of_setsqlselect( &quot;km&quot; )
+	
+	if inv_kpsrv.of_setsqldw( lds_cclall ) &lt;&gt; 1 then
+		destroy lds_cclall
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL กรองข้อมูลสมาชิก(1)&quot;
+		return -1
+	end if
+	
+	if inv_kpsrv.of_setsqldw_coop_recvperiod( lds_cclall , &quot;km&quot; ) &lt;&gt; 1 then
+		destroy lds_cclall
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL กรองข้อมูลสหกรณ์(2)&quot;
+		return -1
+	end if
+catch ( exception iex_exception)
+end try
+
+ls_temp	= lds_cclall.getsqlselect()
+lds_cclall.setsqlselect( ls_temp )
+lds_cclall.settransobject( sqlca )
+
+lds_cclall.retrieve()
+ll_count = lds_cclall.rowcount()
+
+for ll_index = 1 to ll_count
+
+	// ตรวจสอบการสั่งหยุดทำงาน
+	if mod( ll_index, 100 ) = 0 then
+		if this.of_pgisstop() then
+			this.of_pgmessage( &quot;หยุดจากทำงานจากผู้ใช้ การยกเลิกใบเสร็จเรียกเก็บประจำเดือน !!!&quot; )
+			destroy lds_cclall
+			return 0
+		end if
+	end if
+	
+	ls_memno			= trim( lds_cclall.getitemstring( ll_index, &quot;member_no&quot; ) )
+	ls_kpslipno			= trim( lds_cclall.getitemstring( ll_index, &quot;kpslip_no&quot; ) )
+	ls_receiptno			= trim( lds_cclall.getitemstring( ll_index, &quot;receipt_no&quot; ) )
+	ls_recvperiod		= trim( lds_cclall.getitemstring( ll_index, &quot;recv_period&quot; ) )
+	ldc_receiveamt		= lds_cclall.getitemdecimal( ll_index, &quot;receive_amt&quot; )
+	ldtm_receiptdate	= lds_cclall.getitemdatetime( ll_index, &quot;receipt_date&quot; )
+	ls_kepitemtype		= trim( lds_cclall.getitemstring( ll_index, &quot;keepitemtype_code&quot; ) )
+	ls_shrlontype		= trim( lds_cclall.getitemstring( ll_index, &quot;shrlontype_code&quot; ) )
+	li_seqno				= lds_cclall.getitemnumber( ll_index, &quot;seq_no&quot; )
+	li_keepitemstatus	= lds_cclall.getitemnumber( ll_index, &quot;keepitem_status&quot; )
+	ls_lncontno			= trim( lds_cclall.getitemstring( ll_index, &quot;loancontract_no&quot; ) )
+	ldc_prinpay			= lds_cclall.getitemdecimal( ll_index, &quot;principal_payment&quot; )
+	ldc_intpay			= lds_cclall.getitemdecimal( ll_index, &quot;interest_payment&quot; )
+	ldc_intarrpay		= lds_cclall.getitemdecimal( ll_index, &quot;intarrear_payment&quot; )
+	ldc_itempayment	= lds_cclall.getitemdecimal( ll_index, &quot;item_payment&quot; )
+	ldc_prinbal			= lds_cclall.getitemdecimal( ll_index, &quot;principal_balance&quot; )
+	li_period				= lds_cclall.getitemnumber( ll_index, &quot;period&quot; )
+	li_bfcontract			= lds_cclall.getitemnumber( ll_index, &quot;bfcontract_status&quot; )
+	ls_description		= trim( lds_cclall.getitemstring( ll_index, &quot;description&quot; ) )
+	
+	//STEP INSERT SLSLIPADJUST/ UPDATE KPMASTRECEIVE
+	if ls_memno &lt;&gt;  ls_primemno then
+		this.of_pgmessage( string( ll_index , &quot;#,##0&quot; ) + &quot;/&quot; + string( ll_count , &quot;#,##0&quot; )  +&quot;. ทะเบียน &quot; + ls_memno )
+		ls_adjslipno		= inv_docservice.of_getnewdocno( is_coopid ,  &quot;SLSLIPADJUST&quot; )
+		
+		insert into slslipadjust 
+				(	coop_id, 				adjslip_no,			memcoop_id,		member_no,		adjslip_date,		adjtype_code, 
+					operate_date,		ref_slipno,			ref_slipdate,			ref_slipamt,			slip_amt,				slip_status, 
+					entry_id,				entry_date,			entry_bycoopid,	adjcause_code )
+		values	
+				( 	:is_coopid,			:ls_adjslipno,		:is_coopid,			:ls_memno,			:ldtm_canceldate,	&#39;MTH&#39;, 	
+					:ldtm_canceldate,	:ls_kpslipno,			:ldtm_receiptdate,	:ldc_receiveamt,	:ldc_receiveamt,	1,
+					:is_userid, 			:ldtm_entrydate,	:is_coopid,			&#39;001&#39; ) 
+			using sqlca ;		
+			
+		if ( sqlca.sqlcode &lt;&gt; 0 ) then
+			destroy lds_cclall
+			iex_exception.text += &quot;~r~nพบข้อผิดพลาดในการสร้างรายการปรับปรุง!!! ( SLSLIPADJUST ) 1.0 &quot;
+			iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+			iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+			iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+			return -1
+		end if
+		
+		/* update kpmastreceive 
+			1.update สถานะการยกเลิกใบเสร็จ (-9 = ยกเลิกทั้งใบ, -99 = ยกเลิกบางส่วน)
+			2.update เหตุผลในการยกเลิก fix 01 = เงินเดือนไม่พอหัก ***ต้องทำค่าคงที่โดย fix 01 เป็นเงินเดือนไม่พอหักเท่านั้น
+		*/
+		update	kpmastreceive
+		set			keeping_status		= -9,
+					adjreason_code	= &#39;001&#39;
+		where 	(coop_id 				= :is_coopid )
+		and		(kpslip_no			= :ls_kpslipno )
+		using sqlca ;
+		if ( sqlca.sqlcode &lt;&gt; 0 ) then
+			destroy lds_cclall
+			iex_exception.text += &quot;~r~nพบข้อผิดพลาดในการปรับปรุงประกัน&quot;
+			iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+			iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+			iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+			return -1
+		end if
+	end if
+
+	choose case ls_kepitemtype
+		case &quot;FFE&quot;
+			//STEP UPDATE FIRSTFEE_STATUS IN MBMEMMASTER 
+			/*ทำการคืนสถานะการชำระค่าธรรมเนียมแรกเข้า กรณีที่ไม่สามารถเรียกเก็บได้*/
+			update	mbmembmaster
+			set			firstfee_status	= 0
+			where	coop_id			= :is_coopid
+			and		( member_no	= :ls_memno ) 
+			using sqlca ;
+			
+			if ( sqlca.sqlcode &lt;&gt; 0 ) then
+				destroy lds_cclall
+				iex_exception.text += &quot;~r~nพบข้อผิดพลาดในการปรับปรุงสถานะการรับค่าธรรมเนียมแรกเข้า&quot;
+				iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+				iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+				iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+				return -1
+			end if
+			
+		case &quot;S01&quot;, &quot;S02&quot;, &quot;S03&quot;, &quot;S04&quot;, &quot;S05&quot;, &quot;S06&quot;, &quot;S07&quot;, &quot;S08&quot;, &quot;S09&quot;			
+			//STEP INSERT/ UPDATE SHSHAREMASTER AND SHARESTATEMENT 
+			select		sm.last_period,		sm.sharestk_amt,		sm.last_stm_no,	sm.sharearrear_amt,		sm.shrarrpayment_amt,	sm.sharetype_code,	st.unitshare_value
+			into		:li_lastperiod,		:ldc_shrstkamt,			:li_laststmno,		:ldc_shrarramt,				:ldc_shrarrpayamt,		:ls_sharetype,			:ldc_unitshare
+			from	shsharemaster sm
+				join shsharetype st on sm.coop_id = st.coop_id and sm.sharetype_code = st.sharetype_code
+			where	( sm.coop_id		= :is_coopid ) and
+						( sm.member_no	= :ls_memno ) 
+			using sqlca;
+			
+			ldc_shrarrpay		= ldc_itempayment
+			ldc_bfshrarramt	= ldc_shrarramt
+			ldc_shrarramt		= ldc_itempayment/ ldc_unitshare
+			ldc_shrarrpayamt	= ldc_shrarrpay
+			ldc_shrstkamt		= ldc_shrstkamt - ldc_shrarramt
+			ldc_shrstkvalue		= ldc_shrstkamt * ldc_unitshare
+			ldc_prinbal			= ldc_shrstkvalue
+			li_laststmno ++
+			li_lastperiod --
+			
+			//-----update shsharestatement-----//
+			insert into shsharestatement
+					( 	coop_id , 			member_no, 		seq_no, 					operate_date, 			share_date , 			account_date ,
+						slip_date, 			ref_docno, 			shritemtype_code, 	period,					share_amount, 		sharestk_amt, 		
+						entry_id, 			entry_date, 			entry_bycoopid,		shrarrearbf_amt,		shrarrear_amt,			moneytype_code ,
+						ref_slipno,			sharetype_code,	sharestk_value,			item_status )
+			values	
+					( 	:is_coopid , 			:ls_memno, 		:li_laststmno, 			:ldtm_canceldate, 		:ldtm_receiptdate, 	:ldtm_receiptdate, 
+						:ldtm_receiptdate,	:ls_kpslipno, 		&#39;RPM&#39;, 					:li_lastperiod,			:ldc_shrarramt, 		:ldc_shrstkamt, 	
+						:is_userid, 			:ldtm_entrydate, 	:is_coopid,				:ldc_bfshrarramt,		:ldc_shrarramt,			&#39;TMT&#39; ,
+						:ls_kpslipno, 		:ls_sharetype,		:ldc_shrstkvalue,		1
+						) 
+			using sqlca ;
+					  
+			if ( sqlca.sqlcode &lt;&gt; 0 ) then
+				destroy lds_cclall
+				iex_exception.text += &quot;พบข้อผิดพลาดในการบันทึก Statement หุ้น #&quot;
+				iex_exception.text += &quot;ทะเบียนสมาชิก : &quot; + ls_memno
+				iex_exception.text += &quot; &quot; + string( sqlca.sqlcode )
+				iex_exception.text += &quot; &quot; + sqlca.sqlerrtext
+				return -1
+			end if
+			
+			//-----update shsharemaster-----//
+			update	shsharemaster
+			set			last_period				= :li_lastperiod,	
+						sharestk_amt			= :ldc_shrstkamt,
+						last_stm_no				= :li_laststmno,
+						sharearrear_amt		= :ldc_shrarramt,
+						shrarrpayment_amt	= :ldc_shrarrpayamt,
+						sharestk_value			= :ldc_shrstkvalue
+			where	coop_id					= :is_coopid
+			and		( member_no			= :ls_memno ) 
+			and		( sharetype_code		= :ls_sharetype ) 
+			using sqlca ;	
+					
+			if ( sqlca.sqlcode &lt;&gt; 0 ) then
+				destroy lds_cclall
+				iex_exception.text += &quot;~r~nพบข้อผิดพลาดในการปรับปรุงทุนเรือนหุ้นสมาชิก&quot;
+				iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+				iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+				iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+				return -1
+			end if
+			
+		case &quot;L01&quot;, &quot;L02&quot;, &quot;L03&quot;, &quot;L04&quot;, &quot;L05&quot;, &quot;L06&quot;, &quot;L07&quot;, &quot;L08&quot;, &quot;L09&quot;
+			if ls_prelncontno &lt;&gt; ls_lncontno then
+				
+				select	lm.principal_balance,	lm.withdrawable_amt,	lm.interest_arrear,	lm.interest_return,		lm.last_periodpay,		lm.lastcalint_date, 
+						lm.principal_return,	lm.lastprocess_date,		lm.principal_arrear,	lm.contract_status,	lm.last_stm_no,		lt.atm_flag,				lt.pxaftermthkeep_type
+				into	:ldc_bfprnbal,			:ldc_wtdbal, 				:ldc_bfintarr,			:ldc_bfintreturn, 		:li_bflastperiod,			:ldtm_lastcalint,
+						:ldc_bfprnret, 			:ldtm_lastprocdt, 			:ldc_bfprnarrear, 		:li_contstatus, 			:li_laststmno,			:li_atmflag,				:li_pxafterkepmth
+				from lncontmaster lm
+					join lnloantype lt on lm.coop_id = lt.coop_id and lm.loantype_code = lt.loantype_code
+				where	( lm.coop_id				= :is_coopid )
+				and		( lm.loancontract_no	= :ls_lncontno )
+				using sqlca;
+				//and		( lm.member_no		= :ls_memno )
+				li_laststmno ++
+				li_lastperiod			= li_bflastperiod
+				ldc_prnbal			= ldc_bfprnbal + ldc_prinpay
+				ldc_intarrbal			= ldc_bfintarr + ldc_intpay
+				ldc_bfprnarrear		= ldc_prinpay
+				
+			else 
+				
+				li_laststmno ++
+				ldc_bfprnbal			= ldc_prnbal
+				ldc_prnbal			= ldc_bfprnbal + ldc_prinpay
+				ldc_bfintarr			= ldc_intarrbal
+				ldc_intarrbal			= ldc_bfintarr + ldc_intpay
+				ldc_bfprnarrear		= ldc_prinpay
+			end if
+			
+			
+			
+			//สอ.กรมส่งเสริมกรณีที่มีการตั้งค้างดอกเบี้ยและสัญญานั้นมีดอกเบี้ยคืนให้ทำการนำดอกเบี้ยคืนลดยอดดอกเบี้ยค้างเลย
+			if is_coopid = &#39;057001&#39; then 
+				if ldc_intarrbal &gt;= ldc_bfintreturn then
+					ldc_intarrbal		= ldc_intarrbal - ldc_bfintreturn
+					ldc_bfintreturn	= 0
+				else 
+					ldc_bfintreturn	= ldc_bfintreturn - ldc_intarrbal
+					if ldc_bfintreturn &lt; 0 then ldc_bfintreturn = 0
+					ldc_intarrbal		= 0
+				end if
+			end if
+			ldc_prinbal			= ldc_prnbal
+			ldtm_calintto		= ldtm_lastcalint
+			li_lastperiod --
+			
+			//กรณีสัญญาเป็นแบบไม่กันยอด ต้องตรวจว่ามีเงินต้นที่เก็บไม่ได้ไหม
+			if li_pxafterkepmth = 2 and ldc_bfprnbal = 0 and ldc_prinpay = 0 then
+				ldc_bfintreturn = ldc_bfintreturn - ldc_intpay
+				if ldc_bfprnbal = 0 and ldc_bfintarr = 0 then 
+					ldc_intarrbal = 0
+					ldc_prnbal = 0
+				end if
+			end if
+
+			if li_atmflag = 1 then  
+				ldc_wtdbal = ldc_wtdbal - ldc_prinpay
+			else
+				//กรณีเงินต้นมากกว่า 0 หรือมีดอกเบี้ยค้าง &gt; 0 ให้ทำสัญญาที่จบ เป็นสถานะยังไม่จบ
+				if ldc_prnbal &gt; 0 or ldc_intarrbal &gt; 0 and li_contstatus = -1 then li_contstatus = 1
+			end if
+	
+			insert into lncontstatement
+					(	loancontract_no,	coop_id,					seq_no,				slip_date,				operate_date,			account_date,			intaccum_date,			ref_slipno,			
+						ref_docno,			loanitemtype_code,	period,		 		principal_payment,	interest_payment,		principal_balance,		prncalint_amt,			calint_from,
+						calint_to,				bfintarrear_amt,		bfintreturn_amt,    interest_period,		interest_arrear,		interest_return,			item_status,				entry_id,
+						entry_date,			entry_bycoopid, 		moneytype_code )
+			values	
+					(	:ls_lncontno,		:is_coopid,				:li_laststmno,		:ldtm_receiptdate,		:ldtm_canceldate,		:ldtm_receiptdate,		:ldtm_receiptdate,		:ls_kpslipno,
+						:ls_kpslipno,			&#39;RPM&#39;,						:li_lastperiod,		:ldc_prinpay,			:ldc_intpay,				:ldc_prnbal,				:ldc_prnbal,				:ldtm_lastcalint,
+						:ldtm_lastcalint,	:ldc_bfintarr,			:ldc_bfintreturn,	0,							:ldc_intarrbal,			:ldc_bfintreturn,		1,							:is_userid,
+						:ldtm_entrydate,	:is_coopid,				&#39;TMT&#39; ) 
+			using sqlca ;
+					  
+			if ( sqlca.sqlcode &lt;&gt; 0 ) then
+				destroy lds_cclall
+				iex_exception.text += &quot;พบข้อผิดพลาดในการบันทึก Statement เงินกู้ #&quot;
+				iex_exception.text += &quot;ทะเบียนสมาชิก : &quot; + ls_memno
+				iex_exception.text += &quot; &quot; + string( sqlca.sqlcode )
+				iex_exception.text += &quot; &quot; + sqlca.sqlerrtext
+				return -1
+			end if
+			
+			///contract_status		= :li_contstatus,
+			update	lncontmaster
+			set			withdrawable_amt	= :ldc_wtdbal,
+						principal_balance	= :ldc_prnbal,
+						interest_arrear		= :ldc_intarrbal,
+						last_periodpay		= :li_lastperiod,
+						lastcalint_date		= :ldtm_lastcalint,
+						lastpayment_date	= :ldtm_lastcalint,
+						interest_return		= :ldc_bfintreturn,
+						principal_return	= :ldc_bfprnret,
+						last_stm_no			= :li_laststmno,
+						principal_arrear    = :ldc_bfprnarrear,
+						contract_status		= :li_contstatus
+			where	( loancontract_no	= :ls_lncontno )
+			and		( coop_id 			= :is_coopid )
+			using sqlca ;
+			
+			if ( sqlca.sqlcode &lt;&gt; 0 ) then
+				destroy lds_cclall
+				iex_exception.text += &quot;~r~nพบข้อผิดพลาดในการปรับปรุงสัญญาเงินกู้&quot;
+				iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+				iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+				iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+				return -1
+			end if
+					  
+		case &quot;INS&quot;, &quot;I01&quot;, &quot;I02&quot;
+
+			select premium_accum,	premium_arrear,	last_stm_no
+			into	:ldc_premacc,		:ldc_premarrear,	:li_laststmno
+			from	insinsuremaster
+			where	( coop_id = :is_coopid )
+			and		( member_no = :ls_memno )  
+			and		( insurance_no = :ls_lncontno )
+			using sqlca;
+			
+			ldc_premacc	= ldc_premacc - ldc_itempayment
+			ldc_premarrear	= ldc_premarrear+ ldc_itempayment
+			ldc_prnbal		= ldc_premacc
+			li_laststmno ++
+			
+			insert into insinsurestatement
+					(	coop_id,       			insurance_no,			seq_no,				slip_date,			operate_date,			ref_slipno,	      
+						insitemtype_code,		premium_payment,	premium_accum,	moneytype_code,	item_status,				entry_id,			
+						entry_date)
+			values	
+					( 	:is_coopid , 				:ls_lncontno, 			:li_laststmno, 		:ldtm_receiptdate, :ldtm_canceldate, 		:ls_kpslipno, 
+						&#39;RPM&#39;,						:ldc_itempayment, 	:ldc_premacc, 		&#39;TMT&#39;, 				1,							:is_userid, 	
+						:ldtm_entrydate) 
+			using sqlca ;
+					  
+			if ( sqlca.sqlcode &lt;&gt; 0 ) then
+				destroy lds_cclall
+				iex_exception.text += &quot;พบข้อผิดพลาดในการบันทึก Statement ประกัน #&quot;
+				iex_exception.text += &quot;ทะเบียนสมาชิก : &quot; + ls_memno
+				iex_exception.text += &quot; &quot; + string( sqlca.sqlcode )
+				iex_exception.text += &quot; &quot; + sqlca.sqlerrtext
+				return -1
+			end if
+			
+			update	insinsuremaster
+			set			premium_accum	= :ldc_premacc,
+						premium_arrear	= :ldc_premarrear,
+						last_stm_no			= :li_laststmno
+			where 	( insurance_no		= :ls_lncontno )  
+			and		( coop_id				= :is_coopid )
+			using sqlca ;
+			
+			if ( sqlca.sqlcode &lt;&gt; 0 ) then
+				destroy lds_cclall
+				iex_exception.text += &quot;~r~nพบข้อผิดพลาดในการปรับปรุงประกัน&quot;
+				iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+				iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+				iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+				return -1
+			end if
+			
+		case &quot;OTH&quot;
+			
+		case &#39;D00&#39;,&#39;D01&#39;,&#39;D02&#39;
+			/*Wait Function by P&#39;Numb*/
+			/*Close function
+			select deptslip_no
+			into	:ls_slipdoc_no
+			from 	dpdeptslip
+			where refer_slipno 		= :ls_kpslipno
+			and 	coop_id 				= :is_coopid
+			and 	deptaccount_no 	= :ls_lncontno
+ 			using sqlca ;
+			inv_deptsrv.of_operate_cancel( ls_slipdoc_no, is_coopid, is_userid, ldtm_receiptdate, ls_slipno )*/
+			
+	end choose
+	
+	//กรณีเงินฝากไม่ต้อง insert slslipadjust 
+	if ls_kepitemtype = &#39;D00&#39; or ls_kepitemtype = &#39;D01&#39; or ls_kepitemtype = &#39;D02&#39; then
+		////not insert slslipadjust
+	else 	
+		insert into slslipadjustdet
+			(			coop_id , 				adjslip_no,				slipitemtype_code , 	seq_no,					periodadj_amt, 		contcoop_id,			shrlontype_code, 
+						loancontract_no,		slipitem_desc,			principal_adjamt,		interest_adjamt,		intarrear_adjamt,		item_adjamt, 
+						item_balance,			bflastcalint_date,		bfshrcont_status,		bfmthpay_prnamt,		bfmthpay_intamt, 
+						bfmthpay_itemamt,	bfmthpay_intarramt 
+						)
+		values	
+			(			:is_coopid ,				:ls_adjslipno,			:ls_kepitemtype ,		:li_seqno ,				:li_period ,				:is_coopid ,				:ls_shrlontype,		
+						:ls_lncontno ,			:ls_description ,		:ldc_prinpay ,			:ldc_intpay ,				:ldc_intarrpay , 		:ldc_itempayment , 	
+						:ldc_prinbal ,			:ldtm_calintto ,			:li_bfcontract ,			:ldc_prinpay , 			:ldc_intpay , 
+						:ldc_itempayment ,	:ldc_intarrpay ) 
+		using sqlca ;
+						  
+		if ( sqlca.sqlcode &lt;&gt; 0 ) then
+			destroy lds_cclall
+			iex_exception.text += &quot;พบข้อผิดพลาดในการบันทึก ( SLSLIPADJUSTDET ) #&quot;
+			iex_exception.text += &quot;ทะเบียนสมาชิก : &quot; + ls_memno
+			iex_exception.text += &quot; &quot; + string( sqlca.sqlcode )
+			iex_exception.text += &quot; &quot; + sqlca.sqlerrtext
+			return -1
+		end if
+	end if
+	
+	update	kpmastreceivedet 
+	set			keepitem_status	= -9,
+				cancel_id				= :is_userid,
+				cancel_date			= :ldtm_receiptdate
+	where 	(coop_id 				= :is_coopid )
+	and		(kpslip_no			= :ls_kpslipno )
+	and		(seq_no				= :li_seqno )
+	using sqlca ;
+	if ( sqlca.sqlcode &lt;&gt; 0 ) then
+		destroy lds_cclall
+		iex_exception.text += &quot;~r~nพบข้อผิดพลาดในการปรับปรุงประกัน&quot;
+		iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+		iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+		iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+		return -1
+	end if
+	
+	if is_coopid = &#39;065001&#39; then //ไม่ต้องตั้ง kparrearreceive
+//		insert into kparrearreceive 
+//				(	coop_id,						kpslip_no,			recv_period,			seq_no,				member_no,	keepitemtype_code,	loancontract_no,		prinarrear_amt,				intarrear_amt,	
+//					itemarrear_amt,			description,			recv_arrperiod,		payarrear_status,	period_arr,		shrlontype_code,		keppayment_code, 	keprealprincipal_payment,	keprealinterest_payment,
+//					keprealitem_payment,	operate_date )
+//		values
+//				(	:is_coopid,					:ls_kpslipno,			:ls_recvperiod,		:li_seqno,			:ls_memno,		:ls_kepitemtype,		:ls_lncontno,			:ldc_prinpay,					:ldc_intpay,
+//					:ldc_itempayment,			:ls_description,		:ls_recvperiod,		8,						:li_period,		:ls_shrlontype,			: )
+//		if ( sqlca.sqlcode &lt;&gt; 0 ) then
+//			destroy lds_cclall
+//			iex_exception.text += &quot;พบข้อผิดพลาดในการบันทึก รายการค้างชำระ #&quot;
+//			iex_exception.text += &quot;ทะเบียนสมาชิก : &quot; + ls_memno
+//			iex_exception.text += &quot; &quot; + string( sqlca.sqlcode )
+//			iex_exception.text += &quot; &quot; + sqlca.sqlerrtext
+//			return -1
+//		end if
+									 
+	else 
+		
+		insert into	kparrearreceive
+				( 		coop_id, 				kpslip_no,			recv_period, 		seq_no,				member_no,	keepitemtype_code, 
+						loancontract_no,	prinarrear_amt,	intarrear_amt,		itemarrear_amt,	item_payment ) 
+		values	
+				( 		:is_coopid , 			:ls_kpslipno, 		:ls_recvperiod, 		:li_seqno, 			:ls_memno,		:ls_kepitemtype, 
+						:ls_lncontno, 		:ldc_prinpay,		:ldc_intpay,			:ldc_itempayment,	0	) 
+		using sqlca ;
+				  
+		if ( sqlca.sqlcode &lt;&gt; 0 ) then
+			destroy lds_cclall
+			iex_exception.text += &quot;พบข้อผิดพลาดในการบันทึก รายการค้างชำระ #&quot;
+			iex_exception.text += &quot;ทะเบียนสมาชิก : &quot; + ls_memno
+			iex_exception.text += &quot; &quot; + string( sqlca.sqlcode )
+			iex_exception.text += &quot; &quot; + sqlca.sqlerrtext
+			return -1
+		end if
+		
+	end if 
+			
+	ls_primemno = ls_memno
+	
+	commit using sqlca;
+next	
+
+destroy lds_cclall
+
+return 1
+end function</code></pre>
+            </div>
+        </div>
+    </details>
+    <details>
+        <summary>คลิกเพื่อขยายซอร์สโค้ดของฟังก์ชัน of_post_tocancelpartial</summary>
+        <div style="padding: 1rem;">
+            <div class="code-container">
+                <div class="code-header">
+                    <span>PowerBuilder Source: of_post_tocancelpartial</span>
+                    <button class="btn-toggle" onclick="toggleCode(this)">ขยายโค้ด</button>
+                </div>
+                <pre><code>public function integer of_post_tocancelpartial () throws exception;/***********************************************************
+&lt;description&gt;
+	ประมวลยกเลิกรายการเรียกเก็บ ( เก็บได้บางส่วน )
+&lt;/description&gt;
+&lt;return&gt; 
+	Integer	1 = success,  throwable = failure
+&lt;/return&gt;
+&lt;usage&gt; 
+	Revision History:
+	Version 1.0 (Initial version) Date 01/01/2020
+&lt;/usage&gt; 
+***********************************************************/
+datetime		ldtm_entrydate, ldtm_receiptdate, ldtm_lastcalint, ldtm_lastprocdt, ldtm_canceldate, ldtm_calintto
+long			ll_count, ll_index
+integer		li_ret, li_seqno, li_lastperiod, li_laststmno, li_atmflag, li_bflastperiod, li_contstatus, li_pxafterkepmth, li_period
+integer		li_bfcontract, li_resign, li_seqnoret, li_keepitem
+decimal		ldc_receiveamt, ldc_shrstkamt, ldc_shrarramt, ldc_shrarrpayamt, ldc_bfshrarramt, ldc_shrarrpay
+decimal		ldc_bfprnbal, ldc_bfintarr, ldc_bfintmth, ldc_wtdbal, ldc_bfintreturn, ldc_bfprnret, ldc_bfprnarrear, ldc_prnbal, ldc_intarrbal, ldc_intarrmthbal
+decimal		ldc_premacc, ldc_premarrear,  ldc_prinbal, ldc_unitshare, ldc_shrstkvalue
+decimal		ldc_prinpay, ldc_intpay, ldc_intarrpay, ldc_itempayment, ldc_realpay, ldc_cclslipamt
+decimal		ldc_adjprnamt, ldc_adjintamt, ldc_adjitemamt
+string			ls_adjslipno, ls_temp, ls_sqlext, ls_recvperiod, ls_lncontno, ls_receiptno, ls_slipdoc_no, ls_slipno
+string			ls_primemno, ls_memno, ls_kpslipno, ls_kepitemtype, ls_shrlontype, ls_sharetype, ls_description
+n_ds	lds_cclpar
+
+ldtm_entrydate		= datetime( today(), now() )
+ldtm_canceldate	= idtm_operate
+this.of_pgmessage( &quot;กำลังดึงข้อมูลรายการ.....ยกเลิกใบเสร็จประจำเดือน&quot; )
+
+lds_cclpar	= create n_ds
+lds_cclpar.dataobject	= &quot;d_kp_rcvpost_cancelpartial&quot;
+lds_cclpar.settransobject( sqlca )
+
+try
+	inv_kpsrv.of_setsqlselect( &quot;km&quot; )
+	
+	if inv_kpsrv.of_setsqldw( lds_cclpar ) &lt;&gt; 1 then
+		destroy lds_cclpar
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL กรองข้อมูลสมาชิก(1)&quot;
+		return -1
+	end if
+	
+	if inv_kpsrv.of_setsqldw_coop_recvperiod( lds_cclpar , &quot;km&quot; ) &lt;&gt; 1 then
+		destroy lds_cclpar
+		iex_exception.text += &quot;~nพบข้อผิดพลาดในการสร้างชุด SQL กรองข้อมูลสหกรณ์(2)&quot;
+		return -1
+	end if
+catch ( exception iex_exception)
+end try
+
+ls_temp	= lds_cclpar.getsqlselect()
+lds_cclpar.setsqlselect( ls_temp )
+lds_cclpar.settransobject( sqlca )
+
+lds_cclpar.retrieve()
+ll_count = lds_cclpar.rowcount()
+
+for ll_index = 1 to ll_count
+
+	// ตรวจสอบการสั่งหยุดทำงาน
+	if mod( ll_index, 100 ) = 0 then
+		if this.of_pgisstop() then
+			this.of_pgmessage( &quot;หยุดจากทำงานจากผู้ใช้ การยกเลิกใบเสร็จเรียกเก็บประจำเดือน !!!&quot; )
+			destroy lds_cclpar
+			return 0
+		end if
+	end if
+	
+	ls_memno			= trim( lds_cclpar.getitemstring( ll_index, &quot;member_no&quot; ) )
+	ls_kpslipno			= trim( lds_cclpar.getitemstring( ll_index, &quot;kpslip_no&quot; ) )
+	ls_receiptno			= trim( lds_cclpar.getitemstring( ll_index, &quot;receipt_no&quot; ) )
+	ls_recvperiod		= trim( lds_cclpar.getitemstring( ll_index, &quot;recv_period&quot; ) )
+	ldc_receiveamt		= lds_cclpar.getitemdecimal( ll_index, &quot;receive_amt&quot; )
+	ldc_realpay			= lds_cclpar.getitemdecimal( ll_index, &quot;real_payment&quot; )
+	ldtm_receiptdate	= lds_cclpar.getitemdatetime( ll_index, &quot;receipt_date&quot; )
+	ls_kepitemtype		= trim( lds_cclpar.getitemstring( ll_index, &quot;keepitemtype_code&quot; ) )
+	ls_shrlontype		= trim( lds_cclpar.getitemstring( ll_index, &quot;shrlontype_code&quot; ) )
+	li_seqno				= lds_cclpar.getitemnumber( ll_index, &quot;seq_no&quot; )
+	ls_lncontno			= trim( lds_cclpar.getitemstring( ll_index, &quot;loancontract_no&quot; ) )
+	ldc_prinpay			= lds_cclpar.getitemdecimal( ll_index, &quot;principal_payment&quot; )
+	ldc_intpay			= lds_cclpar.getitemdecimal( ll_index, &quot;interest_payment&quot; )
+	ldc_intarrpay		= lds_cclpar.getitemdecimal( ll_index, &quot;intarrear_payment&quot; )
+	ldc_itempayment	= lds_cclpar.getitemdecimal( ll_index, &quot;item_payment&quot; )
+	ldc_prinbal			= lds_cclpar.getitemdecimal( ll_index, &quot;principal_balance&quot; )
+	ldc_adjprnamt		= lds_cclpar.getitemdecimal( ll_index, &quot;adjust_prnamt&quot; )
+	ldc_adjintamt		= lds_cclpar.getitemdecimal( ll_index, &quot;adjust_intamt&quot; )
+	ldc_adjitemamt		= lds_cclpar.getitemdecimal( ll_index, &quot;adjust_itemamt&quot; )
+	li_period				= lds_cclpar.getitemnumber( ll_index, &quot;period&quot; )
+	li_bfcontract			= lds_cclpar.getitemnumber( ll_index, &quot;bfcontract_status&quot; )
+	ls_description		= trim( lds_cclpar.getitemstring( ll_index, &quot;description&quot; ) )
+	li_keepitem			= lds_cclpar.getitemdecimal( ll_index, &quot;keepitem_status&quot;)
+	
+	//STEP INSERT SLSLIPADJUST/ UPDATE KPMASTRECEIVE
+	if ls_memno &lt;&gt;  ls_primemno then
+		this.of_pgmessage( string( ll_index , &quot;#,##0&quot; ) + &quot;/&quot; + string( ll_count , &quot;#,##0&quot; )  +&quot;. ทะเบียน &quot; + ls_memno )
+		ls_adjslipno		= inv_docservice.of_getnewdocno( is_coopid ,  &quot;SLSLIPADJUST&quot; )
+		ldc_cclslipamt 	= ldc_receiveamt - ldc_realpay
+		insert into slslipadjust 
+				(	coop_id, 				adjslip_no,			memcoop_id,		member_no,		adjslip_date,		adjtype_code, 
+					operate_date,		ref_slipno,			ref_slipdate,			ref_slipamt,			slip_amt,				slip_status, 
+					entry_id,				entry_date,			entry_bycoopid,	adjcause_code )
+		values	
+				( 	:is_coopid,			:ls_adjslipno,		:is_coopid,			:ls_memno,			:ldtm_canceldate,	&#39;MTH&#39;, 	
+					:ldtm_canceldate,	:ls_kpslipno,			:ldtm_receiptdate,	:ldc_receiveamt,	:ldc_cclslipamt,		1,
+					:is_userid, 			:ldtm_entrydate,	:is_coopid,			&#39;001&#39; ) 
+			using sqlca ;		
+			
+		if ( sqlca.sqlcode &lt;&gt; 0 ) then
+			destroy lds_cclpar
+			iex_exception.text += &quot;~r~nพบข้อผิดพลาดในการสร้างรายการปรับปรุง!!! ( SLSLIPADJUST ) 1.0 &quot;
+			iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+			iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+			iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+			return -1
+		end if
+		
+		/* update kpmastreceive 
+			1.update สถานะการยกเลิกใบเสร็จ (-9 = ยกเลิกทั้งใบ, -99 = ยกเลิกบางส่วน)
+			2.update เหตุผลในการยกเลิก fix 01 = เงินเดือนไม่พอหัก ***ต้องทำค่าคงที่โดย fix 01 เป็นเงินเดือนไม่พอหักเท่านั้น
+		*/
+		update	kpmastreceive
+		set			keeping_status		= -99,
+					adjreason_code	= &#39;001&#39;
+		where 	(coop_id 				= :is_coopid )
+		and		(kpslip_no			= :ls_kpslipno )
+		using sqlca ;
+		if ( sqlca.sqlcode &lt;&gt; 0 ) then
+			destroy lds_cclpar
+			iex_exception.text += &quot;~r~nพบข้อผิดพลาดในการปรับปรุงประกัน&quot;
+			iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+			iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+			iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+			return -1
+		end if
+	end if
+
+	choose case ls_kepitemtype
+		case &quot;FFE&quot;
+			//STEP UPDATE FIRSTFEE_STATUS IN MBMEMMASTER 
+			/*ทำการคืนสถานะการชำระค่าธรรมเนียมแรกเข้า กรณีที่ไม่สามารถเรียกเก็บได้*/
+			update	mbmembmaster
+			set			firstfee_status	= 0
+			where	coop_id			= :is_coopid
+			and		( member_no	= :ls_memno ) 
+			using sqlca ;
+			
+			if ( sqlca.sqlcode &lt;&gt; 0 ) then
+				destroy lds_cclpar
+				iex_exception.text += &quot;~r~nพบข้อผิดพลาดในการปรับปรุงสถานะการรับค่าธรรมเนียมแรกเข้า&quot;
+				iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+				iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+				iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+				return -1
+			end if
+			
+		case &quot;S01&quot;, &quot;S02&quot;, &quot;S03&quot;, &quot;S04&quot;, &quot;S05&quot;, &quot;S06&quot;, &quot;S07&quot;, &quot;S08&quot;, &quot;S09&quot;			
+			//STEP INSERT/ UPDATE SHSHAREMASTER AND SHARESTATEMENT 
+			select		sm.last_period,		sm.sharestk_amt,		sm.last_stm_no,	sm.sharearrear_amt,		sm.shrarrpayment_amt,	sm.sharetype_code,	st.unitshare_value
+			into		:li_lastperiod,		:ldc_shrstkamt,			:li_laststmno,		:ldc_shrarramt,				:ldc_shrarrpayamt,		:ls_sharetype,			:ldc_unitshare
+			from	shsharemaster sm
+				join shsharetype st on sm.coop_id = st.coop_id and sm.sharetype_code = st.sharetype_code
+			where	( sm.coop_id		= :is_coopid ) and
+						( sm.member_no	= :ls_memno ) 
+			using sqlca;
+			
+			ldc_shrarrpay		= ldc_adjitemamt
+			ldc_bfshrarramt	= ldc_shrarramt
+			ldc_shrarramt		= ldc_adjitemamt / ldc_unitshare
+			ldc_shrarrpayamt	= ldc_shrarrpay
+			ldc_shrstkamt		= ldc_shrstkamt - ldc_shrarramt
+			ldc_shrstkvalue		= ldc_shrstkamt * ldc_unitshare
+			ldc_prinbal			= ldc_shrstkvalue
+			li_laststmno ++
+			li_lastperiod --
+			
+			//-----update shsharestatement-----//
+			insert into shsharestatement
+					( 	coop_id , 			member_no, 		seq_no, 					operate_date, 			share_date , 			account_date ,
+						slip_date, 			ref_docno, 			shritemtype_code, 	period,					share_amount, 		sharestk_amt, 		
+						entry_id, 			entry_date, 			entry_bycoopid,		shrarrearbf_amt,		shrarrear_amt,			moneytype_code ,
+						ref_slipno,			sharetype_code,	sharestk_value,			item_status )
+			values	
+					( 	:is_coopid , 			:ls_memno, 		:li_laststmno, 			:ldtm_canceldate, 		:ldtm_receiptdate, 	:ldtm_receiptdate, 
+						:ldtm_receiptdate,	:ls_kpslipno, 		&#39;RPM&#39;, 					:li_lastperiod,			:ldc_shrarramt, 		:ldc_shrstkamt, 	
+						:is_userid, 			:ldtm_entrydate, 	:is_coopid,				:ldc_bfshrarramt,		:ldc_shrarramt,			&#39;TMT&#39; ,
+						:ls_kpslipno, 		:ls_sharetype,		:ldc_shrstkvalue,		1
+						) 
+			using sqlca ;
+					  
+			if ( sqlca.sqlcode &lt;&gt; 0 ) then
+				destroy lds_cclpar
+				iex_exception.text += &quot;พบข้อผิดพลาดในการบันทึก Statement หุ้น #&quot;
+				iex_exception.text += &quot;ทะเบียนสมาชิก : &quot; + ls_memno
+				iex_exception.text += &quot; &quot; + string( sqlca.sqlcode )
+				iex_exception.text += &quot; &quot; + sqlca.sqlerrtext
+				return -1
+			end if
+			
+			//-----update shsharemaster-----//
+			update	shsharemaster
+			set			last_period				= :li_lastperiod,	
+						sharestk_amt			= :ldc_shrstkamt,
+						last_stm_no				= :li_laststmno,
+						sharearrear_amt		= :ldc_shrarramt,
+						shrarrpayment_amt	= :ldc_shrarrpayamt,
+						sharestk_value			= :ldc_shrstkvalue
+			where	coop_id					= :is_coopid
+			and		( member_no			= :ls_memno ) 
+			and		( sharetype_code		= :ls_sharetype ) 
+			using sqlca ;	
+					
+			if ( sqlca.sqlcode &lt;&gt; 0 ) then
+				destroy lds_cclpar
+				iex_exception.text += &quot;~r~nพบข้อผิดพลาดในการปรับปรุงทุนเรือนหุ้นสมาชิก&quot;
+				iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+				iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+				iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+				return -1
+			end if
+			
+		case &quot;L01&quot;, &quot;L02&quot;, &quot;L03&quot;, &quot;L04&quot;, &quot;L05&quot;, &quot;L06&quot;, &quot;L07&quot;, &quot;L08&quot;, &quot;L09&quot;
+
+			select	lm.principal_balance,	lm.withdrawable_amt,	lm.interest_arrear,	lm.interest_return,		lm.last_periodpay,		lm.lastcalint_date, 
+					lm.principal_return,	lm.lastprocess_date,		lm.principal_arrear,	lm.contract_status,	lm.last_stm_no,		lt.atm_flag,				lt.pxaftermthkeep_type
+			into	:ldc_bfprnbal,			:ldc_wtdbal, 				:ldc_bfintarr,			:ldc_bfintreturn, 		:li_bflastperiod,			:ldtm_lastcalint,
+					:ldc_bfprnret, 			:ldtm_lastprocdt, 			:ldc_bfprnarrear, 		:li_contstatus, 			:li_laststmno,			:li_atmflag,				:li_pxafterkepmth
+			from lncontmaster lm
+				join lnloantype lt on lm.coop_id = lt.coop_id and lm.loantype_code = lt.loantype_code
+			where	( lm.coop_id				= :is_coopid )
+			and		( lm.loancontract_no	= :ls_lncontno )
+			and		( lm.member_no		= :ls_memno )
+			using sqlca;
+			
+			li_laststmno ++
+			li_lastperiod			= li_bflastperiod
+			ldc_prnbal			= ldc_bfprnbal + ldc_adjprnamt
+			ldc_intarrbal			= ldc_bfintarr + ldc_adjintamt
+			ldc_bfprnarrear		= ldc_adjprnamt
+			
+			//สอ.กรมส่งเสริมกรณีที่มีการตั้งค้างดอกเบี้ยและสัญญานั้นมีดอกเบี้ยคืนให้ทำการนำดอกเบี้ยคืนลดยอดดอกเบี้ยค้างเลย
+			if is_coopid = &#39;057001&#39; then 
+				if ldc_intarrbal &gt;= ldc_bfintreturn then
+					ldc_intarrbal		= ldc_intarrbal - ldc_bfintreturn
+					ldc_bfintreturn	= 0
+				else 
+					ldc_bfintreturn	= ldc_bfintreturn - ldc_intarrbal
+					ldc_intarrbal		= 0
+				end if
+			end if
+			ldc_prinbal			= ldc_prnbal
+			ldtm_calintto		= ldtm_lastcalint
+			li_lastperiod --
+			
+			//กรณีสัญญาเป็นแบบไม่กันยอด ต้องตรวจว่ามีเงินต้นที่เก็บไม่ได้ไหม
+			if li_pxafterkepmth = 2 and ldc_bfprnbal = 0 and ldc_adjprnamt = 0 then
+				ldc_bfintreturn = ldc_bfintreturn - ldc_intpay
+				if ldc_bfprnbal = 0 and ldc_bfintarr = 0 then 
+					ldc_intarrbal = 0
+					ldc_prnbal = 0
+				end if
+			end if
+
+			if li_atmflag = 1 then  
+				ldc_wtdbal = ldc_wtdbal - ldc_prinpay
+			else
+				//กรณีเงินต้นมากกว่า 0 หรือมีดอกเบี้ยค้าง &gt; 0 ให้ทำสัญญาที่จบ เป็นสถานะยังไม่จบ
+				if ldc_prnbal &gt; 0 or ldc_intarrbal &gt; 0 and li_contstatus = -1 then li_contstatus = 1
+			end if
+	
+			insert into lncontstatement
+					(	loancontract_no,	coop_id,					seq_no,				slip_date,				operate_date,			account_date,			intaccum_date,			ref_slipno,			
+						ref_docno,			loanitemtype_code,	period,		 		principal_payment,	interest_payment,		principal_balance,		prncalint_amt,			calint_from,
+						calint_to,				bfintarrear_amt,		bfintreturn_amt,    interest_period,		interest_arrear,		interest_return,			item_status,				entry_id,
+						entry_date,			entry_bycoopid, 		moneytype_code )
+			values	
+					(	:ls_lncontno,		:is_coopid,				:li_laststmno,		:ldtm_receiptdate,		:ldtm_canceldate,		:ldtm_receiptdate,		:ldtm_receiptdate,		:ls_kpslipno,
+						:ls_kpslipno,			&#39;RPM&#39;,						:li_lastperiod,		:ldc_adjprnamt,		:ldc_adjintamt,			:ldc_prnbal,				:ldc_prnbal,				:ldtm_lastcalint,
+						:ldtm_lastcalint,	:ldc_bfintarr,			:ldc_bfintreturn,	0,							:ldc_intarrbal,			:ldc_bfintreturn,		1,							:is_userid,
+						:ldtm_entrydate,	:is_coopid,				&#39;TMT&#39; ) 
+			using sqlca ;
+					  
+			if ( sqlca.sqlcode &lt;&gt; 0 ) then
+				destroy lds_cclpar
+				iex_exception.text += &quot;พบข้อผิดพลาดในการบันทึก Statement เงินกู้ #&quot;
+				iex_exception.text += &quot;ทะเบียนสมาชิก : &quot; + ls_memno
+				iex_exception.text += &quot; &quot; + string( sqlca.sqlcode )
+				iex_exception.text += &quot; &quot; + sqlca.sqlerrtext
+				return -1
+			end if
+			
+			///contract_status		= :li_contstatus,
+			update	lncontmaster
+			set			withdrawable_amt	= :ldc_wtdbal,
+						principal_balance	= :ldc_prnbal,
+						interest_arrear		= :ldc_intarrbal,
+						last_periodpay		= :li_lastperiod,
+						lastcalint_date		= :ldtm_lastcalint,
+						lastpayment_date	= :ldtm_lastcalint,
+						interest_return		= :ldc_bfintreturn,
+						principal_return	= :ldc_bfprnret,
+						last_stm_no			= :li_laststmno,
+						principal_arrear    = :ldc_bfprnarrear,
+						contract_status		= :li_contstatus
+			where	( loancontract_no	= :ls_lncontno )
+			and		( coop_id 			= :is_coopid )
+			using sqlca ;
+			
+			if ( sqlca.sqlcode &lt;&gt; 0 ) then
+				destroy lds_cclpar
+				iex_exception.text += &quot;~r~nพบข้อผิดพลาดในการปรับปรุงสัญญาเงินกู้&quot;
+				iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+				iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+				iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+				return -1
+			end if
+					  
+		case &quot;INS&quot;, &quot;I01&quot;, &quot;I02&quot;
+
+			select premium_accum,	premium_arrear,	last_stm_no
+			into	:ldc_premacc,		:ldc_premarrear,	:li_laststmno
+			from	insinsuremaster
+			where	( coop_id = :is_coopid )
+			and		( member_no = :ls_memno )  
+			and		( insurance_no = :ls_lncontno )
+			using sqlca;
+			
+			ldc_premacc	= ldc_premacc - ldc_adjitemamt
+			ldc_premarrear	= ldc_premarrear + ldc_adjitemamt
+			ldc_prnbal		= ldc_premacc
+			li_laststmno ++
+			
+			insert into insinsurestatement
+					(	coop_id,       			insurance_no,			seq_no,				slip_date,			operate_date,			ref_slipno,	      
+						insitemtype_code,		premium_payment,	premium_accum,	moneytype_code,	item_status,				entry_id,			
+						entry_date)
+			values	
+					( 	:is_coopid , 				:ls_lncontno, 			:li_laststmno, 		:ldtm_receiptdate, :ldtm_canceldate, 		:ls_kpslipno, 
+						&#39;RPM&#39;,						:ldc_adjitemamt, 		:ldc_premacc, 		&#39;TMT&#39;, 				1,							:is_userid, 	
+						:ldtm_entrydate) 
+			using sqlca ;
+					  
+			if ( sqlca.sqlcode &lt;&gt; 0 ) then
+				destroy lds_cclpar
+				iex_exception.text += &quot;พบข้อผิดพลาดในการบันทึก Statement ประกัน #&quot;
+				iex_exception.text += &quot;ทะเบียนสมาชิก : &quot; + ls_memno
+				iex_exception.text += &quot; &quot; + string( sqlca.sqlcode )
+				iex_exception.text += &quot; &quot; + sqlca.sqlerrtext
+				return -1
+			end if
+			
+			update	insinsuremaster
+			set			premium_accum	= :ldc_premacc,
+						premium_arrear	= :ldc_premarrear,
+						last_stm_no			= :li_laststmno
+			where 	( insurance_no		= :ls_lncontno )  
+			and		( coop_id				= :is_coopid )
+			using sqlca ;
+			
+			if ( sqlca.sqlcode &lt;&gt; 0 ) then
+				destroy lds_cclpar
+				iex_exception.text += &quot;~r~nพบข้อผิดพลาดในการปรับปรุงประกัน&quot;
+				iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+				iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+				iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+				return -1
+			end if
+			
+		case &quot;OTH&quot;
+		case &#39;D00&#39;,&#39;D01&#39;,&#39;D02&#39;
+			/*Wait Function by P&#39;Numb*/
+			/*Close function
+			select deptslip_no
+			into	:ls_slipdoc_no
+			from 	dpdeptslip
+			where refer_slipno 		= :ls_kpslipno
+			and 	coop_id 				= :is_coopid
+			and 	deptaccount_no 	= :ls_lncontno
+ 			using sqlca ;
+			inv_deptsrv.of_operate_cancel( ls_slipdoc_no, is_coopid, is_userid, ldtm_receiptdate, ls_slipno )*/
+			
+	end choose
+	
+	//กรณีเงินฝากไม่ต้อง insert slslipadjust 
+	if ls_kepitemtype = &#39;D00&#39; or ls_kepitemtype = &#39;D01&#39; or ls_kepitemtype = &#39;D02&#39; then
+		////not insert slslipadjust
+		if is_coopid = &#39;056001&#39; and li_keepitem = 1 then
+			insert into slslipadjustdet
+				(			coop_id , 				adjslip_no,				slipitemtype_code , 	seq_no,					periodadj_amt, 		contcoop_id,			shrlontype_code, 
+							loancontract_no,		slipitem_desc,			principal_adjamt,		interest_adjamt,		intarrear_adjamt,		item_adjamt, 
+							item_balance,			bflastcalint_date,		bfshrcont_status,		bfmthpay_prnamt,		bfmthpay_intamt, 
+							bfmthpay_itemamt,	bfmthpay_intarramt 
+							)
+			values	
+				(			:is_coopid ,				:ls_adjslipno,			:ls_kepitemtype ,		:li_seqno ,				:li_period ,				:is_coopid ,				:ls_shrlontype,		
+							:ls_lncontno ,			:ls_description ,		:ldc_adjprnamt ,		:ldc_adjintamt ,		:ldc_intarrpay , 		:ldc_adjitemamt , 	
+							:ldc_prinbal ,			:ldtm_calintto ,			:li_bfcontract ,			:ldc_prinpay , 			:ldc_intpay , 
+							:ldc_itempayment ,	:ldc_intarrpay ) 
+			using sqlca ;
+								  
+			if ( sqlca.sqlcode &lt;&gt; 0 ) then
+				destroy lds_cclpar
+				iex_exception.text += &quot;พบข้อผิดพลาดในการบันทึก ( SLSLIPADJUSTDET ) #&quot;
+				iex_exception.text += &quot;ทะเบียนสมาชิก : &quot; + ls_memno
+				iex_exception.text += &quot; &quot; + string( sqlca.sqlcode )
+				iex_exception.text += &quot; &quot; + sqlca.sqlerrtext
+				return -1
+			end if
+		end if
+	else 
+		insert into slslipadjustdet
+			(			coop_id , 				adjslip_no,				slipitemtype_code , 	seq_no,					periodadj_amt, 		contcoop_id,			shrlontype_code, 
+						loancontract_no,		slipitem_desc,			principal_adjamt,		interest_adjamt,		intarrear_adjamt,		item_adjamt, 
+						item_balance,			bflastcalint_date,		bfshrcont_status,		bfmthpay_prnamt,		bfmthpay_intamt, 
+						bfmthpay_itemamt,	bfmthpay_intarramt 
+						)
+		values	
+			(			:is_coopid ,				:ls_adjslipno,			:ls_kepitemtype ,		:li_seqno ,				:li_period ,				:is_coopid ,				:ls_shrlontype,		
+						:ls_lncontno ,			:ls_description ,		:ldc_adjprnamt ,		:ldc_adjintamt ,		:ldc_intarrpay , 		:ldc_adjitemamt , 	
+						:ldc_prinbal ,			:ldtm_calintto ,			:li_bfcontract ,			:ldc_prinpay , 			:ldc_intpay , 
+						:ldc_itempayment ,	:ldc_intarrpay ) 
+		using sqlca ;
+							  
+		if ( sqlca.sqlcode &lt;&gt; 0 ) then
+			destroy lds_cclpar
+			iex_exception.text += &quot;พบข้อผิดพลาดในการบันทึก ( SLSLIPADJUSTDET ) #&quot;
+			iex_exception.text += &quot;ทะเบียนสมาชิก : &quot; + ls_memno
+			iex_exception.text += &quot; &quot; + string( sqlca.sqlcode )
+			iex_exception.text += &quot; &quot; + sqlca.sqlerrtext
+			return -1
+		end if
+	end if
+	
+	update	kpmastreceivedet 
+	set			keepitem_status	= -9,
+				cancel_id				= :is_userid,
+				cancel_date			= :ldtm_canceldate
+	where 	(coop_id 				= :is_coopid )
+	and		(kpslip_no			= :ls_kpslipno )
+	and		(seq_no				= :li_seqno )
+	using sqlca ;
+	if ( sqlca.sqlcode &lt;&gt; 0 ) then
+		destroy lds_cclpar
+		iex_exception.text += &quot;~r~nพบข้อผิดพลาดในการปรับปรุงประกัน&quot;
+		iex_exception.text += &quot;~r~nทะเบียนสมาชิก : &quot; + ls_memno
+		iex_exception.text += &quot;~r~n&quot; + string( sqlca.sqlcode )
+		iex_exception.text += &quot;~r~n&quot; + sqlca.sqlerrtext
+		return -1
+	end if
+	
+	if is_coopid &lt;&gt; &#39;065001&#39; then 
+		insert into	kparrearreceive
+				( 		coop_id, 				kpslip_no,			recv_period, 		seq_no,				member_no,	keepitemtype_code, 
+						loancontract_no,	prinarrear_amt,	intarrear_amt,		itemarrear_amt,	item_payment ) 
+		values	
+				( 		:is_coopid , 			:ls_kpslipno, 		:ls_recvperiod, 		:li_seqno, 			:ls_memno,		:ls_kepitemtype, 
+						:ls_lncontno, 		:ldc_adjprnamt,	:ldc_adjintamt,		:ldc_adjitemamt,	0	) 
+		using sqlca ;
+				  
+		if ( sqlca.sqlcode &lt;&gt; 0 ) then
+			destroy lds_cclpar
+			iex_exception.text += &quot;พบข้อผิดพลาดในการบันทึก รายการค้างชำระ #&quot;
+			iex_exception.text += &quot;ทะเบียนสมาชิก : &quot; + ls_memno
+			iex_exception.text += &quot; &quot; + string( sqlca.sqlcode )
+			iex_exception.text += &quot; &quot; + sqlca.sqlerrtext
+			return -1
+		end if
+	end if
+	ls_primemno = ls_memno
+	commit using sqlca;
+next	
+
+destroy lds_cclpar
+
+return 1
+end function</code></pre>
+            </div>
+        </div>
+    </details>
+</div>
+        </div>
+        <h2 id="database">4. สรุปตารางและข้อมูลที่เกี่ยวข้อง (Database Interactions Schema)</h2>
+        <div class="card" style="padding: 1rem;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ลำดับขั้นตอน</th>
+                        <th>ตารางต้นทาง (Source)</th>
+                        <th>ตารางปลายทาง (Target)</th>
+                        <th>หน้าที่การทำงานหลัก</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><b>อัปเดต Sequence</b></td>
+                        <td>lncontstatement, shsharestatement</td>
+                        <td>lncontmaster, shsharemaster</td>
+                        <td>อัปเดตค่า sequence ล่าสุดเข้า Master ป้องกันการเกิด Sequence ซ้ำก่อนเริ่มประมวลผล</td>
+                    </tr>
+                    <tr>
+                        <td><b>สร้างหัวใบเสร็จ</b></td>
+                        <td>kptempreceive</td>
+                        <td>kpmastreceive</td>
+                        <td>โอนย้ายข้อมูลหัวใบเสร็จเรียกเก็บมาสร้างใบเสร็จจริงในระบบ</td>
+                    </tr>
+                    <tr>
+                        <td><b>ค่าธรรมเนียมแรกเข้า</b></td>
+                        <td>kptempreceivedet</td>
+                        <td>kpmastreceivedet, mbmembmaster</td>
+                        <td>ตัดยอดค่าธรรมเนียมแรกเข้าสมาชิก พร้อมปรับปรุงสถานะ firstfee_status</td>
+                    </tr>
+                    <tr>
+                        <td><b>ค่าหุ้นรายเดือน</b></td>
+                        <td>kptempreceivedet</td>
+                        <td>kpmastreceivedet, shsharemaster, shsharestatement</td>
+                        <td>ตัดยอดทุนเรือนหุ้นรายเดือน สะสมยอดหุ้นใน Master หุ้น และบันทึกประวัติความเคลื่อนไหวหุ้น (SPM)</td>
+                    </tr>
+                    <tr>
+                        <td><b>หนี้เงินกู้รายเดือน</b></td>
+                        <td>kptempreceivedet</td>
+                        <td>kpmastreceivedet, lncontmaster, lncontstatement, mbmembmaster</td>
+                        <td>คำนวณหักกลบยอดหนี้เงินต้น ดอกเบี้ย และดอกเบี้ยค้าง อัปเดตยอดคงเหลือ Master เงินกู้ บันทึกประวัติ (LPM) และสะสมดอกเบี้ยจ่ายสมาชิก</td>
+                    </tr>
+                    <tr>
+                        <td><b>เงินฝากรายเดือน</b></td>
+                        <td>kptempreceivedet</td>
+                        <td>dpdeptslip, dpdeptstatement, dpdeptmaster, dpdeptprncfixed</td>
+                        <td>ตัดยอดส่งบัญชีเงินฝาก บันทึกสลิปนำฝาก ประวัติเงินฝาก และยอดเงินคงเหลือบัญชีสมาชิก</td>
+                    </tr>
+                    <tr>
+                        <td><b>ยกเลิกเงินเดือนไม่พอหัก</b></td>
+                        <td>kpmastreceivedet</td>
+                        <td>slslipadjust, slslipadjustdet, kparrearreceive</td>
+                        <td>สร้างใบปรับปรุงยกเลิกใบเสร็จ คืนค่าหนี้/หุ้นสะสมเดิมในตาราง Master และตั้งหนี้ค้างลงตารางติดตามหนี้ค้างชำระ</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card" id="coop">
+            <h3>5. ข้อสังเกตและ Business Logic สำคัญตามรายสหกรณ์ (Co-op Specific Logic)</h3>
+            <p><b>1. สอ. การไฟฟ้าส่วนภูมิภาค (PEA - Coop ID: '008001'):</b></p>
+            <p style="margin-left: 1.5rem; font-size: 0.95rem; color: var(--text-secondary);>- หากยอดเรียกเก็บหนี้เป็น 0 (เก็บเงินไม่ได้) ระบบจะเซตสถานะเป็น <code>keepitem_status = -9</code> ทันทีและไม่ลงรายการความเคลื่อนไหวในประวัติ Statement หนี้</p>
+            <p style="margin-left: 1.5rem; font-size: 0.95rem; color: var(--text-secondary);>- มีการย้ายยอดดอกเบี้ยค้างที่เกิดหลังวันเรียกเก็บจาก <code>intset_arrear</code> ไปไว้ใน <code>intmonth_arrear</code> และเคลียร์ <code>intset_arrear</code> เป็น 0 เสมอในขั้นตอนตัดยอดเงินกู้</p>
+            <p style="margin-top: 1rem;"><b>2. สอ. กรมทางหลวง (DOH - Coop ID: '056001'):</b></p>
+            <p style="margin-left: 1.5rem; font-size: 0.95rem; color: var(--text-secondary);>- รองรับกระบวนการเก็บยอดเงินกู้ได้บางส่วน (<code>keepitem_status = -99</code>)</p>
+            <p style="margin-left: 1.5rem; font-size: 0.95rem; color: var(--text-secondary);>- ในการสร้างหัวใบเสร็จและการตัดยอดจะแยกทำงานตามรหัสวิธีส่งหักของกลุ่มสมาชิก (<code>keeporg_code</code>)</p>
+            <p style="margin-top: 1rem;"><b>3. สอ. กฟผ. (EGAT - Coop ID: '065001'):</b></p>
+            <p style="margin-left: 1.5rem; font-size: 0.95rem; color: var(--text-secondary);>- ดึงและประมวลผลตัดยอดกลุ่มสัญญากู้ประเภทฉุกเฉินแยกแถวออกจากสัญญาประเภทปกติ (<code>loanemerkep_flag</code>)</p>
+            <p style="margin-left: 1.5rem; font-size: 0.95rem; color: var(--text-secondary);>- อ้างอิงโครงสร้างคงที่สำหรับ EGAT โดยใช้ Datastore <code>d_kp_constant_egat</code></p>
+            <p style="margin-left: 1.5rem; font-size: 0.95rem; color: var(--text-secondary);>- ในขั้นตอนจบงาน มีการบันทึกวันที่ผ่านรายการบัญชีไปยังตารางใบเสร็จรับเงินย่อย (<code>kpmastreceivedet.trantovc_date</code>) เป็นวันประมวลผลทันที</p>
+            <p style="margin-top: 1rem;"><b>4. สอ. วิทยุการบิน (AERO - Coop ID: '077001'):</b></p>
+            <p style="margin-left: 1.5rem; font-size: 0.95rem; color: var(--text-secondary);>- มี Logic การคำนวณดอกเบี้ยค้างส่งต่างจากแกนกลาง (Core) โดยนำดอกเบี้ยยกไปสะสมคิดต่อ: <code>ldc_fwintarrear = ดอกเบี้ยค้างสะสมเดิม + ค้างรายเดือน + ดอกเบี้ยงวด</code></p>
+            <p style="margin-left: 1.5rem; font-size: 0.95rem; color: var(--text-secondary);>- เรียกใช้งานฟังก์ชันยกเลิกรายการบางส่วนแยกพิเศษคือ <code>of_post_tocancelpartial_aero()</code></p>
+            <p style="margin-top: 1rem;"><b>5. สอ. กรมส่งเสริมสหกรณ์ (Coop ID: '057001'):</b></p>
+            <p style="margin-left: 1.5rem; font-size: 0.95rem; color: var(--text-secondary);>- กรณีสัญญากู้ประเภท ATM จะใช้เลขงวดชำระจากที่ส่งเรียกเก็บและใช้เลขงวดใน Master ตามตาราง Master โดยตรงโดยไม่ต้องเพิ่มจำนวนงวดชำระสะสม (+1) เหมือนสัญญาทั่วไป</p>
+            <p style="margin-left: 1.5rem; font-size: 0.95rem; color: var(--text-secondary);>- ในขั้นตอนยกเลิกรายการ หักลบดอกเบี้ยค้างด้วยยอดดอกเบี้ยคืนที่มีอยู่เดิมทันที</p>
+        </div>
+    </div>
+    <script>
+        function toggleCode(btn) {
+            const pre = btn.parentElement.nextElementSibling;
+            if (pre.classList.contains('expanded')) {
+                pre.classList.remove('expanded');
+                btn.textContent = 'ขยายโค้ด';
+            } else {
+                pre.classList.add('expanded');
+                btn.textContent = 'ย่อโค้ด';
+            }
+        }
+        const sections = document.querySelectorAll('.card, header');
+        const navLinks = document.querySelectorAll('.sidebar a');
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= (sectionTop - 150)) {
+                    current = section.getAttribute('id');
+                }
+            });
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
