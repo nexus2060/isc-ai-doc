@@ -1,0 +1,483 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Base: n_cst_proc_divmemb Analysis & Workflow</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --primary-hover: #0b5ed7;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+            --code-bg: #1e1e1e;
+            --code-color: #d4d4d4;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Leelawadee UI';
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        .header-banner {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .header-banner h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        .header-banner p {
+            margin: 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            display: flex;
+            gap: 2rem;
+        }
+
+        .sidebar {
+            width: 280px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 2rem;
+            height: calc(100vh - 4rem);
+            overflow-y: auto;
+            background: var(--card-bg);
+            padding: 1.25rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid var(--border-color);
+        }
+
+        .sidebar h3 {
+            font-size: 1.1rem;
+            margin-top: 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar li {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 0.92rem;
+            display: block;
+            padding: 0.35rem 0.5rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar a:hover {
+            background-color: #e9ecef;
+            color: var(--primary-color);
+            padding-left: 0.75rem;
+        }
+
+        .content {
+            flex-grow: 1;
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid var(--border-color);
+            min-width: 0;
+        }
+
+        h2 {
+            color: #1e3c72;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+            font-size: 1.6rem;
+        }
+
+        h3 {
+            color: #2a5298;
+            margin-top: 1.5rem;
+            font-size: 1.3rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.2rem 0;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f1f3f5;
+            color: #1e3c72;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-color);
+            padding: 1.25rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            border: 1px solid #333;
+        }
+
+        code {
+            font-family: 'Consolas', 'Courier New', Courier, monospace;
+            background-color: #e9ecef;
+            color: #d63384;
+            padding: 0.18rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #664d03;
+            border: 1px solid #ffe69c;
+            padding: 1rem 1.25rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+        }
+
+        .alert-info {
+            background-color: #cff4fc;
+            color: #055160;
+            border: 1px solid #b6effb;
+            padding: 1rem 1.25rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+        }
+
+        .mermaid {
+            background: #ffffff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+
+        .badge-entry {
+            background-color: #198754;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 992px) {
+            .container { flex-direction: column; }
+            .sidebar { width: 100%; position: relative; height: auto; top: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-banner">
+    <h1>Knowledge Base: PowerBuilder Object Analysis</h1>
+    <p>วิเคราะห์ Workflow และ Logic การทำงานของ <code>n_cst_proc_divmemb</code> (pcdivavg.pbl) สำหรับระบบ isc-ai</p>
+</div>
+
+<div class="container">
+    <div class="sidebar">
+        <h3>สารบัญ (Table of Contents)</h3>
+        <ul>
+            <li><a href="#section-1">1. ภาพรวม (Overview)</a></li>
+            <li><a href="#section-2">2. ลำดับการทำงาน (Workflow)</a></li>
+            <li><a href="#section-3">3. ขั้นตอนประมวลผลอย่างละเอียด</a></li>
+            <li><a href="#section-3-0" style="padding-left:1.2rem;">3.0 ฟังก์ชัน of_gen_period</a></li>
+            <li><a href="#section-3-1" style="padding-left:1.2rem;">3.1 ฟังก์ชัน of_prc_memb</a></li>
+            <li><a href="#section-3-2" style="padding-left:1.2rem;">3.2 of_prc_memb_clr</a></li>
+            <li><a href="#section-3-3" style="padding-left:1.2rem;">3.3 of_prc_memb_master</a></li>
+            <li><a href="#section-3-4" style="padding-left:1.2rem;">3.4 of_prc_memb_shr / mas</a></li>
+            <li><a href="#section-3-5" style="padding-left:1.2rem;">3.5 of_prc_memb_shr_day</a></li>
+            <li><a href="#section-3-6" style="padding-left:1.2rem;">3.6 of_prc_memb_shr_mth</a></li>
+            <li><a href="#section-3-7" style="padding-left:1.2rem;">3.7 of_prc_memb_lon</a></li>
+            <li><a href="#section-3-8" style="padding-left:1.2rem;">3.8 of_prc_memb_methpayold</a></li>
+            <li><a href="#section-4">4. Call Hierarchy & Services</a></li>
+            <li><a href="#section-5">5. Database Table Reference</a></li>
+            <li><a href="#section-6">6. ข้อสังเกต [ต้องตรวจสอบ]</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <section id="section-1">
+            <h2>1. ภาพรวม (Overview)</h2>
+            <p>Object <code>n_cst_proc_divmemb</code> ใน PowerBuilder Library <code>C:\GCOOP_ALL\CORE\GCOOP\PBProcess\pcdivavg.pbl</code> เป็น NVO หลักที่ทำหน้าที่ประมวลผลตั้งข้อมูลสมาชิก, หุ้น, และหนี้เงินกู้เพื่อคำนวณเงินปันผลและเงินเฉลี่ยคืนประจำปีสำหรับระบบ Core Banking ของสหกรณ์</p>
+            <div class="alert-info">
+                <strong>บทบาทหลักในระบบ Core Banking:</strong>
+                <ul>
+                    <li>คัดกรองและสร้างทะเบียนสมาชิกที่มีสิทธิ์ปันผล/เฉลี่ยคืนลงตาราง <code>YRBGMASTER</code></li>
+                    <li>ประมวลผลฐานหุ้นยกมาและหุ้นระหว่างปีคำนวณเงินปันผลทั้งแบบ <strong>รายวัน (DAY)</strong> และ <strong>รายเดือน (MTH)</strong></li>
+                    <li>คำนวณดอกเบี้ยกู้จ่ายสะสมเพื่อเฉลี่ยคืนลง <code>YRBGLONMASTER</code></li>
+                    <li>คัดลอกช่องทางการจ่ายเงินปันผลจากปีก่อนหน้าลง <code>YRREQMETHPAY</code> / <code>YRREQMETHPAYDET</code></li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="section-2">
+            <h2>2. ลำดับการทำงาน (Workflow)</h2>
+            <ol>
+                <li><strong>Init Parameter:</strong> นำเข้า XML Option อ่านค่าคงที่ระบบปันผลผ่าน Service</li>
+                <li><strong>Step 1 Clear Old Data:</strong> เรียก <code>of_prc_memb_clr()</code> เพื่อลบข้อมูลประมวลผลเดิมในตาราง <code>YRBG*</code></li>
+                <li><strong>Step 2 Gen Dividend Members:</strong> เรียก <code>of_prc_memb_master()</code> เพื่อสร้างสมาชิกสิทธิ์ปันผลลง <code>YRBGMASTER</code></li>
+                <li><strong>Step 3 Process Shares:</strong> เรียก <code>of_prc_memb_shr()</code> -> <code>of_prc_memb_shr_mas()</code> และแยกตามประเภทคำนวณ (DAY / MTH)</li>
+                <li><strong>Step 4 Process Loans:</strong> เรียก <code>of_prc_memb_lon()</code> เพื่อรวมดอกเบี้ยเงินกู้ลง <code>YRBGLONMASTER</code></li>
+                <li><strong>Step 5 Process Payout Method:</strong> เรียก <code>of_prc_memb_methpayold()</code> ตั้งวิธีจ่ายเงินจากปีเก่า</li>
+                <li><strong>Commit Transaction:</strong> บันทึกข้อมูล (COMMIT USING sqlca) และอัปเดตสถานะสำเร็จลง <code>CMPROCESSING</code></li>
+            </ol>
+
+            <h3>Workflow Diagram (Mermaid)</h3>
+            <div class="mermaid">
+flowchart TD
+    Start(["เริ่มต้นประมวลผล (of_prc_memb)"]) --> ImportXML["นำเข้าเงื่อนไข XML Option"]
+    ImportXML --> Step1["Step 1: of_prc_memb_clr()<br/>ล้างข้อมูลเดิมในตาราง YRBG*"]
+    Step1 --> Step2["Step 2: of_prc_memb_master()<br/>สร้างสมาชิกสิทธิ์ปันผลลง YRBGMASTER"]
+    Step2 --> Step3["Step 3: of_prc_memb_shr()<br/>ประมวลผลข้อมูลหุ้น"]
+    Step3 --> CheckDivType{"รูปแบบปันผลหุ้น"}
+    CheckDivType -- "DAY" --> Step3_DAY["of_prc_memb_shr_day()<br/>คำนวณวันสะสมปันผลรายวัน"]
+    CheckDivType -- "MTH" --> Step3_MTH["of_prc_memb_shr_mth()<br/>คำนวณปันผลรายเดือน"]
+    Step3_MTH --> CallGenPeriod["⚡ of_gen_period()<br/>คำนวณงวดเดือนทางบัญชี (1-12)"]
+    CallGenPeriod --> Step4["Step 4: of_prc_memb_lon()<br/>ประมวลผลหนี้สำหรับเฉลี่ยคืน"]
+    Step3_DAY --> Step4
+    Step4 --> Step5["Step 5: of_prc_memb_methpayold()<br/>ตั้งวิธีจ่ายเงินปันผลปีก่อน"]
+    Step5 --> CommitTx["COMMIT Transaction (sqlca)"]
+    CommitTx --> Finish(["จบการทำงานสำเร็จ"])
+            </div>
+        </section>
+
+        <section id="section-3">
+            <h2>3. ขั้นตอนการประมวลผลอย่างละเอียด (Detailed Processing & Code Reference)</h2>
+
+            <div id="section-3-0">
+                <h3>3.0 ฟังก์ชันหลัก <code class="badge-entry">of_gen_period</code> (Entry Point ในการคำนวณงวดเดือน)</h3>
+                <p><strong>Signature:</strong> <code>public function integer of_gen_period (date ad_startdate, date ad_datadate)</code></p>
+                <p>ทำหน้าที่แปลง <code>ad_datadate</code> (วันที่เคลื่อนไหวหุ้น) ให้เป็น <strong>งวดเดือนทางบัญชี (1 ถึง 12)</strong> โดยอ้างอิงจาก <code>ad_startdate</code> (วันเริ่มรอบปีบัญชีของสหกรณ์)</p>
+                
+                <pre><code>public function integer of_gen_period (date ad_startdate, date ad_datadate);
+integer		li_accmonth, li_month, li_monthdif, li_monthstart
+
+li_monthstart	= month( ad_startdate)
+li_month		= month( ad_datadate )
+
+li_monthdif	 	= li_monthstart - 1
+
+if li_month < li_monthstart then
+	li_accmonth = ( li_month+12 ) - li_monthdif
+else
+	li_accmonth = li_month - li_monthdif
+end if
+
+return li_accmonth
+end function</code></pre>
+            </div>
+
+            <div id="section-3-1">
+                <h3>3.1 ฟังก์ชันควบคุมหลัก <code>of_prc_memb</code></h3>
+                <p>เป็น Entry Point หลัก ควบคุมลำดับการประมวลผล Step 1 ถึง Step 5 และจัดการ Transaction (COMMIT/ROLLBACK)</p>
+                <pre><code>try
+	this.of_pgstep( 1, li_maxstep )
+	this.of_prc_memb_clr(lds_constant,lds_mbopt)
+	
+	this.of_pgstep( 2, li_maxstep )
+	this.of_prc_memb_master(lds_constant,lds_mbopt)
+
+	this.of_pgstep( 3, li_maxstep )
+	this.of_prc_memb_shr(lds_constant,lds_mbopt)
+
+	this.of_pgstep( 4, li_maxstep )
+	this.of_prc_memb_lon(lds_mbopt)
+	
+	if li_metholdflg = 1 then
+		this.of_pgstep( 5, li_maxstep )
+		this.of_prc_memb_methpayold(lds_mbopt)
+	end if
+	
+	commit using sqlca ;
+catch( exception lthw_memb )
+	rollback using sqlca ;
+	this.of_pgerror( iex_exception.text )
+end try</code></pre>
+            </div>
+
+            <div id="section-3-2">
+                <h3>3.2 การล้างข้อมูลเดิม <code>of_prc_memb_clr</code></h3>
+                <p>ลบข้อมูลเก่าในตาราง <code>YRBGSHRSTATEMENTBF</code>, <code>YRBGSHRSTATEMENT</code>, <code>YRBGSHRMTH</code>, <code>YRBGSHRMASTER</code>, <code>YRBGLONMASTER</code>, <code>YRBGMASTER</code>, และ <code>YRUCFMTH</code></p>
+                <pre><code>ls_sql	= " delete from yrbgshrstatementbf " 
+ls_sql += " where yrbgshrstatementbf.coop_id = '" + is_coopcontrol + "' and yrbgshrstatementbf.div_year = '"+ ls_divyear +"' "
+ls_sql += " and exists ( select 1 from yrbgmaster where yrbgmaster.coop_id = yrbgshrstatementbf.coop_id and yrbgmaster.member_no = yrbgshrstatementbf.member_no and yrbgmaster.div_year = yrbgshrstatementbf.div_year " 
+ls_sql	+= " and yrbgmaster.coop_id =  '" + is_coopcontrol + "' and yrbgmaster.div_year = '"+ ls_divyear +"' "
+ls_sql += ls_sqlselect + " ) "
+execute immediate :ls_sql using sqlca;</code></pre>
+            </div>
+
+            <div id="section-3-3">
+                <h3>3.3 การสร้างทะเบียนสมาชิกสิทธิ์ปันผล <code>of_prc_memb_master</code></h3>
+                <p>คัดเลือกสมาชิกสิทธิ์ปันผลลงตาราง <code>YRBGMASTER</code> ตามเงื่อนไข <code>memset_code</code> (REG, SHR, CSM) และอัปเดต Flag งดปันผลจาก <code>YRREQREFRAIN</code></p>
+            </div>
+
+            <div id="section-3-4">
+                <h3>3.4 การประมวลผลหุ้น <code>of_prc_memb_shr</code> / <code>of_prc_memb_shr_mas</code></h3>
+                <p>อัปเดตหุ้นยกมาใน <code>YRBGINFO</code>, สร้าง <code>YRBGSHRMASTER</code>, <code>YRBGSHRSTATEMENT</code>, และคำนวณปันผลย้อนหลังหุ้นปีก่อนใน <code>YRBGSHRSTATEMENTBF</code> พร้อมเรียกฟังก์ชันปัดเศษเงินปันผล <code>ftcm_roundmoney</code></p>
+            </div>
+
+            <div id="section-3-5">
+                <h3>3.5 การคำนวณปันผลหุ้นรายวัน <code>of_prc_memb_shr_day</code></h3>
+                <p>คำนวณจำนวนวันสะสม (<code>daysafter</code>) ระหว่างวันที่หุ้นเคลื่อนไหวจนถึงสิ้นปีบัญชี อัปเดตลง <code>YRBGSHRSTATEMENT</code></p>
+            </div>
+
+            <div id="section-3-6">
+                <h3>3.6 การคำนวณปันผลหุ้นรายเดือน <code>of_prc_memb_shr_mth</code> & <code>of_prc_memb_shr_mth_mod</code></h3>
+                <p>เรียกใช้ <code>of_gen_period()</code> เพื่อหางวดเดือนทางบัญชี (1-12) ตรวจสอบวัน Cutoff การซื้อหุ้นประจำเดือน และปรับยอดยกมาตามการถอนหุ้นย้อนหลัง</p>
+            </div>
+
+            <div id="section-3-7">
+                <h3>3.7 การประมวลผลหนี้สำหรับเฉลี่ยคืน <code>of_prc_memb_lon</code></h3>
+                <p>รวมยอดดอกเบี้ยเงินกู้ชำระสะสมจาก <code>LNCONTSTATEMENT</code> บันทึกลง <code>YRBGLONMASTER</code> และอัปเดตการงดเฉลี่ยคืนรายสัญญาจาก <code>YRREQREFRAINLOAN</code></p>
+            </div>
+
+            <div id="section-3-8">
+                <h3>3.8 การตั้งข้อมูลวิธีจ่ายปันผลจากปีเก่า <code>of_prc_memb_methpayold</code></h3>
+                <p>คัดลอกข้อมูลช่องทางการรับเงินปันผล/เฉลี่ยคืนจาก <code>YRDIVMETHPAY</code> ปีก่อนลง <code>YRREQMETHPAY</code> และ <code>YRREQMETHPAYDET</code></p>
+            </div>
+        </section>
+
+        <section id="section-4">
+            <h2>4. Call Hierarchy & Services</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Caller Function</th>
+                        <th>Callee Function</th>
+                        <th>Object</th>
+                        <th>จุดประสงค์</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>of_prc_memb</code></td>
+                        <td><code>of_prc_memb_clr</code></td>
+                        <td><code>n_cst_proc_divmemb</code></td>
+                        <td>ล้างข้อมูลปันผลเดิมในตาราง YRBG*</td>
+                    </tr>
+                    <tr>
+                        <td><code>of_prc_memb</code></td>
+                        <td><code>of_prc_memb_master</code></td>
+                        <td><code>n_cst_proc_divmemb</code></td>
+                        <td>คัดเลือกสมาชิกสิทธิ์ปันผลลง YRBGMASTER</td>
+                    </tr>
+                    <tr>
+                        <td><code>of_prc_memb</code></td>
+                        <td><code>of_prc_memb_shr</code></td>
+                        <td><code>n_cst_proc_divmemb</code></td>
+                        <td>ประมวลผลฐานเงินปันผลหุ้น</td>
+                    </tr>
+                    <tr>
+                        <td><code>of_prc_memb_shr</code></td>
+                        <td><code>of_prc_memb_shr_mth</code></td>
+                        <td><code>n_cst_proc_divmemb</code></td>
+                        <td>คำนวณปันผลหุ้นแบบรายเดือน</td>
+                    </tr>
+                    <tr>
+                        <td><code>of_prc_memb_shr_mth</code></td>
+                        <td><code>of_prc_memb_shr_mth_mod</code></td>
+                        <td><code>n_cst_proc_divmemb</code></td>
+                        <td>จัดงวดเดือนหุ้นและคิดการถอนหุ้นย้อนหลัง</td>
+                    </tr>
+                    <tr>
+                        <td><code>of_prc_memb_shr_mth_mod</code></td>
+                        <td><strong><code>of_gen_period</code></strong></td>
+                        <td><code>n_cst_proc_divmemb</code></td>
+                        <td>⚡ แปลงวันที่หุ้นเป็นงวดเดือนบัญชี (1-12)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="section-5">
+            <h2>5. Database Table Reference</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ชื่อตาราง</th>
+                        <th>Access Type</th>
+                        <th>Key Columns</th>
+                        <th>ถูกใช้ใน Function</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>YRBGMASTER</code></td><td>Insert/Delete/Update</td><td>coop_id, member_no, div_year</td><td>of_prc_memb_clr, of_prc_memb_master</td></tr>
+                    <tr><td><code>YRBGSHRMASTER</code></td><td>Insert/Delete/Update</td><td>coop_id, member_no, div_year</td><td>of_prc_memb_clr, of_prc_memb_shr_mas</td></tr>
+                    <tr><td><code>YRBGSHRSTATEMENT</code></td><td>Insert/Delete/Update</td><td>coop_id, member_no, div_year, seq_no</td><td>of_prc_memb_clr, of_prc_memb_shr_day</td></tr>
+                    <tr><td><code>YRBGSHRSTATEMENTBF</code></td><td>Insert/Delete/Update</td><td>coop_id, member_no, div_year, seq_no</td><td>of_prc_memb_clr, of_prc_memb_shr_mas</td></tr>
+                    <tr><td><code>YRBGSHRMTH</code></td><td>Insert/Delete/Update</td><td>coop_id, member_no, div_year, mth_code</td><td>of_prc_memb_clr, of_prc_memb_shr_mth</td></tr>
+                    <tr><td><code>YRBGLONMASTER</code></td><td>Insert/Delete/Update</td><td>coop_id, member_no, div_year, loancontract_no</td><td>of_prc_memb_clr, of_prc_memb_lon</td></tr>
+                    <tr><td><code>YRREQMETHPAY</code></td><td>Insert/Update</td><td>coop_id, methreq_docno, div_year</td><td>of_prc_memb_methpayold</td></tr>
+                    <tr><td><code>CMPROCESSING</code></td><td>Update</td><td>process_id</td><td>n_cst_process_base</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="section-6">
+            <h2>6. ข้อสังเกตและจุดที่ต้องระวัง ([ต้องตรวจสอบเพิ่มเติม])</h2>
+            <div class="alert-warning">
+                <ul>
+                    <li><strong>[ต้องตรวจสอบเพิ่มเติม] Multi-database Dialect:</strong> วัตถุรองรับทั้ง Oracle ('1'), SQL Server ('2') และ MySQL โดยใน SQL Server ฟังก์ชันปัดเศษจะเรียกเป็น <code>dbo.ftcm_roundmoney</code></li>
+                    <li><strong>[ต้องตรวจสอบเพิ่มเติม] Custom Coop Logic:</strong> สหกรณ์ PEA (008001), AIS (085001) และ ศาลปกครอง (014001) มี Hardcoded Exception ในการคิดจำนวนวันและยอดยกมาหุ้น</li>
+                </ul>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script>
+    mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+</script>
+</body>
+</html>
