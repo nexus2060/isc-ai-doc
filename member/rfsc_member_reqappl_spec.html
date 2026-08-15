@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสมาชิกและหุ้น - ใบสมัครสมาชิก (Specification)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #eff6ff;
+            --primary-border: #bfdbfe;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --bg-page: #f8fafc;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
+            --border-dark: #cbd5e1;
+            --table-header: #f1f5f9;
+            --table-hover: #f8fafc;
+            --code-bg: #f1f5f9;
+            --code-color: #0f172a;
+            --tag-bg: #e0f2fe;
+            --tag-color: #0369a1;
+            --warn-bg: #fffbeb;
+            --warn-border: #fde68a;
+            --warn-text: #92400e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: var(--bg-page);
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            padding: 2.5rem;
+        }
+
+        .frontmatter-box {
+            background-color: var(--primary-light);
+            border: 1px solid var(--primary-border);
+            border-radius: 6px;
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+            font-size: 14px;
+        }
+
+        .frontmatter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .frontmatter-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .frontmatter-label {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 13px;
+        }
+
+        .frontmatter-value {
+            color: var(--text-main);
+            word-break: break-all;
+        }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 4px;
+        }
+
+        .tag {
+            background: var(--tag-bg);
+            color: var(--tag-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        h1 {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        h2 {
+            font-size: 19px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.3rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+        }
+
+        p, ul, ol {
+            margin-bottom: 1rem;
+            color: var(--text-main);
+        }
+
+        ul, ol {
+            padding-left: 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0 1.5rem 0;
+            font-size: 14px;
+        }
+
+        th, td {
+            border: 1px solid var(--border-dark);
+            padding: 10px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: var(--table-header);
+            font-weight: 600;
+            color: #334155;
+            white-space: nowrap;
+        }
+
+        tr:hover td {
+            background-color: var(--table-hover);
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: var(--code-bg);
+            color: var(--code-color);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .badge-success {
+            background-color: #dcfce7;
+            color: #15803d;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 12px;
+            display: inline-block;
+        }
+
+        .badge-warning {
+            background-color: #fef3c7;
+            color: #b45309;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 12px;
+            display: inline-block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.25rem;
+            }
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="frontmatter-box">
+        <div class="frontmatter-grid">
+            <div class="frontmatter-item">
+                <span class="frontmatter-label">ID:</span>
+                <span class="frontmatter-value"><code>COOP-RFSC-ระบบสมาชิกและหุ้น-ใบสมัครสมาชิก</code></span>
+            </div>
+            <div class="frontmatter-item">
+                <span class="frontmatter-label">Type:</span>
+                <span class="frontmatter-value">screen-spec</span>
+            </div>
+            <div class="frontmatter-item">
+                <span class="frontmatter-label">System (ระบบ):</span>
+                <span class="frontmatter-value">ระบบสมาชิกและหุ้น</span>
+            </div>
+            <div class="frontmatter-item">
+                <span class="frontmatter-label">Screen (หน้าจอ):</span>
+                <span class="frontmatter-value">ใบสมัครสมาชิก</span>
+            </div>
+            <div class="frontmatter-item" style="grid-column: 1 / -1;">
+                <span class="frontmatter-label">Source Path:</span>
+                <span class="frontmatter-value"><code>C:\GCOOP_ALL\CORE_RFSC\GCOOP\Saving\Applications\mbshr\ws_mem_reqappl_ctrl\</code></span>
+            </div>
+            <div class="frontmatter-item">
+                <span class="frontmatter-label">Confidence:</span>
+                <span class="frontmatter-value"><span class="badge-success">high</span></span>
+            </div>
+            <div class="frontmatter-item">
+                <span class="frontmatter-label">Needs Human Review:</span>
+                <span class="frontmatter-value"><span class="badge-warning">true</span></span>
+            </div>
+            <div class="frontmatter-item" style="grid-column: 1 / -1;">
+                <span class="frontmatter-label">Tables Observed:</span>
+                <div class="tag-list">
+                    <span class="tag">ALL_TAB_COLUMNS</span>
+                    <span class="tag">CMDOCUMENTCONTROL</span>
+                    <span class="tag">CMUCFBANK</span>
+                    <span class="tag">CMUCFBANKBRANCH</span>
+                    <span class="tag">CMUCFMONEYTYPE</span>
+                    <span class="tag">ELCMAPELECTION</span>
+                    <span class="tag">MBMEMBMASTER</span>
+                    <span class="tag">MBREQAPPL</span>
+                    <span class="tag">MBREQAPPLADDRESS</span>
+                    <span class="tag">MBREQAPPLEXPENSE</span>
+                    <span class="tag">MBREQAPPLFAMILY</span>
+                    <span class="tag">MBREQAPPLMONEYTR</span>
+                    <span class="tag">MBUCFADDRESS</span>
+                    <span class="tag">MBUCFAPPLTYPE</span>
+                    <span class="tag">MBUCFCATEGORY</span>
+                    <span class="tag">MBUCFDEPARTMENT</span>
+                    <span class="tag">MBUCFDEPTCONTROL</span>
+                    <span class="tag">MBUCFDEPTDIVISION</span>
+                    <span class="tag">MBUCFDEPTMINISTRY</span>
+                    <span class="tag">MBUCFDEPTSECTION</span>
+                    <span class="tag">MBUCFDISTRICT</span>
+                    <span class="tag">MBUCFFAMILY</span>
+                    <span class="tag">MBUCFMEMBGROUP</span>
+                    <span class="tag">MBUCFMEMBGRPELEC</span>
+                    <span class="tag">MBUCFMEMBTYPE</span>
+                    <span class="tag">MBUCFMONEYTRTYPE</span>
+                    <span class="tag">MBUCFPOSITION</span>
+                    <span class="tag">MBUCFPRENAME</span>
+                    <span class="tag">MBUCFPROVINCE</span>
+                    <span class="tag">MBUCFRESIGNCAUSE</span>
+                    <span class="tag">MBUCFTAMBOL</span>
+                    <span class="tag">SHSHARETYPE</span>
+                    <span class="tag">SHSHARETYPEMTHRATE</span>
+                    <span class="tag">SHUCFTRANMEMBTYPE</span>
+                    <span class="tag">YRUCFMETHPAY</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h1>ใบสมัครสมาชิก</h1>
+
+    <h2>1. ภาพรวมของหน้าจอนี้</h2>
+    <ul>
+        <li><strong>วัตถุประสงค์</strong>: ใช้สำหรับบันทึก แก้ไข และค้นหาข้อมูลใบคำขอสมัครเข้าเป็นสมาชิกสหกรณ์ (ทั้งกรณีสมัครใหม่ สมาชิกเดิมที่ลาออกแล้วกลับมาสมัครใหม่ หรือการโอนย้ายมาจากสหกรณ์อื่น) รองรับการบันทึกข้อมูลส่วนบุคคล ข้อมูลการทำงาน ข้อมูลการส่งค่าหุ้นรายเดือน ข้อมูลบัญชีธนาคารสำหรับรับ-จ่ายเงิน/เงินปันผล/การหักเงินเดือน ข้อมูลบุคคลในครอบครัว/ผู้รับผลประโยชน์ ข้อมูลที่อยู่อื่นๆ ข้อมูลการโอนย้ายจากสหกรณ์อื่น และการเชื่อมโยงรูปถ่าย/เอกสารผู้สมัคร</li>
+        <li><strong>ไฟล์ต้นทางหลัก</strong>: <code>ws_mem_reqappl.aspx</code>, <code>ws_mem_reqappl.aspx.cs</code>, <code>DsMain.ascx</code>, <code>DsMain.ascx.cs</code>, <code>DsAddress.ascx</code>, <code>DsAddress.ascx.cs</code>, <code>DsFamily.ascx</code>, <code>DsFamily.ascx.cs</code>, <code>DsMoneytr.ascx</code>, <code>DsMoneytr.ascx.cs</code>, <code>DsTransfer.ascx</code>, <code>DsTransfer.ascx.cs</code>, <code>DsAccountMain.ascx</code>, <code>DsAccountMain.ascx.cs</code></li>
+        <li><strong>ระบบที่หน้าจอนี้สังกัด</strong>: ระบบสมาชิกและหุ้น (mbshr)</li>
+    </ul>
+
+    <h2>2. ลำดับขั้นตอนการทำงานของหน้าจอนี้</h2>
+    <ol>
+        <li><strong>การเข้าสู่หน้าจอและตั้งค่าเริ่มต้น</strong>: เมื่อเปิดหน้าจอ (<code>!IsPostBack</code>) ระบบจะเรียกเมธอด <code>Refresh()</code> เพื่อกำหนดค่าเริ่มต้น ได้แก่ <code>MEMBCAT_CODE = "10"</code> (สมาชิกสามัญ), <code>APPL_DOCNO = "AUTO"</code>, <code>APPLY_DATE = state.SsWorkDate</code>, <code>NATIONALITY = "ไทย"</code>, <code>APPLTYPE_CODE = "10"</code>, <code>address_set_code = "00"</code> (ที่อยู่ปัจจุบัน), <code>EXPENSE_CODE = "TRN"</code>, <code>pauseshare_flag = 0</code> พร้อมทั้งสร้างรายการบัญชีเริ่มต้นใน <code>dsMoneytr</code> 2 รายการ ได้แก่ รายการเงินปันผล (<code>TRTYPE_CODE = "DVAV1"</code>, <code>MONEYTYPE_CODE = "DEP"</code>) และรายการหักเงินเดือน (<code>TRTYPE_CODE = "KEEP1"</code>, <code>MONEYTYPE_CODE = "SAL"` หรือตามค่า `EXPENSE_CODE` ของสังกัด) และสร้าง Token สำหรับเชื่อมโยง iframe รูปภาพผู้สมัคร (`wd_fom_upload_image.aspx`)</li>
+        <li><strong>การนำเข้าข้อมูลผู้สมัคร</strong>:
+            <ul>
+                <li><strong>กรณีอ่านข้อมูลจากบัตรประชาชน (Smart Card)</strong>: ผู้ใช้คลิกปุ่ม <code>b_Smart_Card</code> ระบบส่งคำขอไปยัง Local Service <code>http://localhost:1888/ismartcard</code> เมื่ออ่านข้อมูลสำเร็จจะเรียก <code>PostSmartCard</code> เพื่อนำข้อมูลเลขบัตรประชาชน, คำนำหน้า, ชื่อ-สกุล (ไทย/อังกฤษ), เพศ, วันเกิด, ที่อยู่ มากรอกลงในฟิลด์ต่างๆ โดยอัตโนมัติ และตรวจสอบความถูกต้องของเลขบัตรประชาชน</li>
+                <li><strong>กรณีค้นหาใบคำขอเดิมมาแก้ไข</strong>: ผู้ใช้คลิกค้นหาจากแถบเมนู (<code>MenubarOpen</code>) เปิดหน้าต่างค้นหา <code>wd_mem_request.aspx</code> เมื่อเลือกใบคำขอ ระบบจะส่ง <code>appl_docno</code> กลับมา และเรียก <code>PostApplDocno</code> เพื่อดึงข้อมูลเดิมจากตาราง <code>MBREQAPPL</code>, <code>MBREQAPPLADDRESS</code>, <code>MBREQAPPLFAMILY</code>, <code>MBREQAPPLMONEYTR</code></li>
+                <li><strong>กรณีสมัครใหม่ด้วยตนเอง</strong>: ผู้ใช้เลือกกลุ่มสมาชิก (<code>MEMBCAT_CODE</code>) และกรอกเลขประจำตัวประชาชน (<code>CARD_PERSON</code>)</li>
+            </ul>
+        </li>
+        <li><strong>การตรวจสอบและคำนวณอัตโนมัติระหว่างกรอกข้อมูล</strong>:
+            <ul>
+                <li>เมื่อกรอกเลขบัตรประชาชน (<code>CARD_PERSON</code>): ตรวจสอบ Check Digit (Mod 11), ตรวจสอบสมาชิกภาพเดิม (<code>CheckCardPerson</code>) หากเป็นสมาชิกอยู่แล้วหรือมีใบคำขอรออนุมัติจะไม่อนุญาต, ตรวจสอบจำนวนครั้งที่เคยลาออกเทียบกับ <code>MBUCFCATEGORY.MAXAPPL_TIME</code> และระยะเวลาหลังลาออกเทียบกับ <code>MBUCFCATEGORY.RETURNAPPL_PERIOD</code> หากผ่านเกณฑ์และเคยเป็นสมาชิกมาก่อน ระบบจะดึงข้อมูลสมาชิกเดิมจาก <code>MBMEMBMASTER</code> มาแสดงให้อัตโนมัติ (<code>RetreiveApplDocnomaster</code>) พร้อมคำนวณสิทธิ์ซื้อหุ้นโอนย้ายประเภทสมาชิก (<code>CheckTranMembtype</code>)</li>
+                <li>เมื่อเลือกคำนำหน้าชื่อ (<code>PRENAME_CODE</code>): ระบบกำหนดเพศ (<code>SEX</code>) ให้อัตโนมัติ</li>
+                <li>เมื่อระบุวันเกิด (<code>BIRTH_DATE</code>): คำนวณอายุ (<code>memb_age</code>) และตรวจสอบอายุขั้นต่ำตาม <code>MBUCFMEMBTYPE.REGIS_AGE</code>, คำนวณวันเกษียณอายุ (<code>RETIRE_DATE</code>), และหากอายุครบ 60 ปีขึ้นไปจะเปิดให้เลือก "งดส่งหุ้น" (<code>pauseshare_flag</code>) ได้</li>
+                <li>เมื่อระบุเงินเดือน (<code>SALARY_AMOUNT</code>): คำนวณค่าหุ้นฐานขั้นต่ำ (<code>PERIODBASE_VALUE</code>) และค่าหุ้นส่งรายเดือนเริ่มต้น (<code>PERIODSHARE_VALUE</code>) ผ่าน <code>WebUtil.GetMinMaxShareBase</code></li>
+                <li>เมื่อระบุค่าหุ้นต่อเดือน (<code>PERIODSHARE_VALUE</code>): ตรวจสอบไม่ให้ต่ำกว่าหุ้นฐาน ไม่เกินเพดานสูงสุด และเป็นไปตามกฎของสมาชิกที่เคยลาออกหรือเกษียณอายุ</li>
+                <li>เมื่อเลือกสังกัด (<code>MEMBGROUP_CODE</code>): กำหนดรูปแบบการชำระเงินของรายการเรียกเก็บ (<code>KEEP1</code>) ตาม <code>MBUCFMEMBGROUP.EXPENSE_CODE</code></li>
+                <li>เมื่อเลือกฝ่ายงาน (<code>DEPARTMENT_CODE</code>): ค้นหาและแสดงชื่อหน่วยเลือกตั้ง (<code>groupelec_desc</code>) จาก <code>ELCMAPELECTION</code></li>
+                <li>เมื่อระบุตำบล (<code>TAMBOL_CODE</code>): ดึงรหัสไปรษณีย์ (<code>POSTCODE</code>) จาก <code>MBUCFTAMBOL</code> อัตโนมัติ</li>
+                <li>สามารถกดปุ่ม "คัดลอกที่อยู่" ในส่วนที่อยู่อื่นๆ (<code>PostDupAdd</code>) หรือครอบครัว (<code>PostDupFamily</code>) เพื่อคัดลอกที่อยู่หลักมาใช้งาน</li>
+            </ul>
+        </li>
+        <li><strong>การบันทึกข้อมูล (<code>SaveWebSheet</code>)</strong>:
+            <ul>
+                <li>ผู้ใช้กดปุ่มบันทึก (Save) ระบบตรวจสอบความครบถ้วนฝั่ง Client ผ่าน JavaScript <code>Validate()</code></li>
+                <li>เซิร์ฟเวอร์ทำงานในเมธอด <code>SaveWebSheet()</code>:
+                    <ul>
+                        <li>ตรวจสอบความถูกต้องของข้อมูลครอบครัว (ความสัมพันธ์, เลขบัตรประชาชน 13 หลัก)</li>
+                        <li>กรณีแก้ไขใบคำขอ (<code>APPL_DOCNO != "AUTO"</code>): ตรวจสอบว่าสถานะต้องเป็นรออนุมัติ (<code>APPL_STATUS == 8</code>) เท่านั้น จึงจะบันทึกการอัปเดตข้อมูล (<code>ExecuteType.Update</code>) ลงตาราง <code>MBREQAPPL</code>, <code>MBREQAPPLADDRESS</code>, <code>MBREQAPPLFAMILY</code>, <code>MBREQAPPLMONEYTR</code></li>
+                        <li>กรณีเพิ่มใบคำขอใหม่ (<code>APPL_DOCNO == "AUTO"</code>): ตรวจสอบใบคำขอซ้ำ, ขอเลขที่เอกสารใหม่ผ่าน <code>WebUtil.GetLastDocumentNo("MBAPPLDOCNO", true, false)</code>, บันทึกข้อมูลใหม่ (<code>ExecuteType.Insert</code>), บันทึกการผูกรูปภาพผ่าน <code>WebUtil.SaveImageREQ</code>, และอัปเดตเลขที่เอกสารล่าสุดใน <code>CMDOCUMENTCONTROL</code></li>
+                        <li>แสดงข้อความผลการบันทึกสำเร็จ และรีเซ็ตหน้าจอเพื่อพร้อมรับรายการถัดไป</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ol>
+
+    <h2>3. คุณสมบัติและฟังก์ชัน</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 6%;">ลำดับ</th>
+                <th style="width: 30%;">ฟังก์ชัน</th>
+                <th>คำอธิบาย</th>
+                <th style="width: 25%;">อ้างอิงไฟล์:method</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>สามารถอ่านข้อมูลจากบัตรประชาชนผ่าน Smart Card Reader</td>
+                <td>เชื่อมต่อ Local API <code>http://localhost:1888/ismartcard</code> เพื่อนำข้อมูลส่วนตัวและที่อยู่จากบัตรประชาชนมากรอกลงในแบบฟอร์มอัตโนมัติ</td>
+                <td><code>ws_mem_reqappl.aspx.cs:PostSmartCard</code>, <code>ws_mem_reqappl.aspx:OnDsMainClicked</code></td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>สามารถตรวจสอบความถูกต้องของเลขประจำตัวประชาชน (Mod 11)</td>
+                <td>คำนวณ Check Digit ตามมาตรฐานเลขประจำตัวประชาชน 13 หลัก ทั้งข้อมูลผู้สมัครและข้อมูลบุคคลในครอบครัว</td>
+                <td><code>ws_mem_reqappl.aspx.cs:PostCardperson</code>, <code>ws_mem_reqappl.aspx.cs:PostCardpersonFamily</code>, <code>ws_mem_reqappl.aspx.cs:PostCard</code></td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>สามารถตรวจสอบประวัติสมาชิกภาพเดิมและสิทธิ์การสมัครใหม่</td>
+                <td>ตรวจสอบว่าผู้สมัครเป็นสมาชิกอยู่แล้ว มีใบคำขอรออนุมัติอยู่ สมัครเกินจำนวนครั้งที่กำหนด หรือลาออกยังไม่ครบตามระยะเวลาที่กำหนดหรือไม่</td>
+                <td><code>ws_mem_reqappl.aspx.cs:CheckCardPerson</code>, <code>ws_mem_reqappl.aspx.cs:CheckPerson</code></td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>สามารถดึงข้อมูลสมาชิกเดิมมาแสดงอัตโนมัติเมื่อเป็นสมาชิกเก่าที่ลาออก</td>
+                <td>โหลดข้อมูลส่วนตัว สังกัด ตำแหน่ง ที่อยู่ และประวัติเดิมจาก <code>MBMEMBMASTER</code> เมื่อเลขบัตรประชาชนผ่านเงื่อนไขการสมัครใหม่</td>
+                <td><code>ws_mem_reqappl.aspx.cs:RetreiveApplDocnomaster</code>, <code>ws_mem_reqappl.aspx.cs:Retivemaster</code></td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>สามารถค้นหาและเปิดใบคำขอสมัครสมาชิกเดิม</td>
+                <td>เปิดหน้าต่างค้นหาใบคำขอ <code>wd_mem_request.aspx</code> และดึงข้อมูลใบคำขอที่เลือกมาแสดงบนหน้าจอเพื่อตรวจสอบหรือแก้ไข</td>
+                <td><code>ws_mem_reqappl.aspx.cs:PostApplDocno</code>, <code>ws_mem_reqappl.aspx:MenubarOpen</code></td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>สามารถคำนวณอายุและวันเกษียณอายุตามประเภทสมาชิก</td>
+                <td>คำนวณอายุผู้สมัคร ณ วันที่ทำงาน และคำนวณวันเกษียณอายุตามเกณฑ์วัน เดือน และอายุเกษียณใน <code>MBUCFMEMBTYPE</code></td>
+                <td><code>ws_mem_reqappl.aspx.cs:PostBirthDate</code>, <code>ws_mem_reqappl.aspx.cs:PostMembtypeAge</code></td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>สามารถคำนวณค่าหุ้นฐานขั้นต่ำและค่าหุ้นรายเดือนเริ่มต้น</td>
+                <td>คำนวณอัตราการส่งหุ้นฐานตามฐานเงินเดือนและกลุ่มสมาชิกโดยเรียกใช้ <code>WebUtil.GetMinMaxShareBase</code></td>
+                <td><code>ws_mem_reqappl.aspx.cs:PostSalaryAmt</code>, <code>ws_mem_reqappl.aspx.cs:PostSalary</code></td>
+            </tr>
+            <tr>
+                <td>8</td>
+                <td>สามารถตรวจสอบความถูกต้องและเงื่อนไขการส่งค่าหุ้นรายเดือน</td>
+                <td>ตรวจสอบค่าหุ้นขั้นต่ำ (100 บาท), การปัดเศษทวีคูณของ 10, ไม่เกินเงินเดือน, ไม่ต่ำกว่าหุ้นฐาน, ไม่เกินเพดานสูงสุด และเงื่อนไขเฉพาะของสมาชิกที่เคยลาออกหรือเกษียณอายุ</td>
+                <td><code>ws_mem_reqappl.aspx.cs:PostShareValue</code>, <code>ws_mem_reqappl.aspx:OnDsMainItemChanged</code></td>
+            </tr>
+            <tr>
+                <td>9</td>
+                <td>สามารถเปิด/ปิดการขอใช้สิทธิ์งดส่งค่าหุ้นรายเดือน</td>
+                <td>เปิดให้เลือกงดส่งค่าหุ้น (<code>pauseshare_flag</code>) ได้เฉพาะสมาชิกที่มีอายุตั้งแต่ 60 ปีขึ้นไป หรือตามกลุ่มสมาชิกที่กำหนด</td>
+                <td><code>ws_mem_reqappl.aspx.cs:PostChkPauseShare</code>, <code>ws_mem_reqappl.aspx.cs:PostBirthDate</code>, <code>ws_mem_reqappl.aspx.cs:PostMembtypeAge</code></td>
+            </tr>
+            <tr>
+                <td>10</td>
+                <td>สามารถคำนวณสิทธิ์การซื้อหุ้นพิเศษจากการโอนย้ายประเภทสมาชิก</td>
+                <td>คำนวณมูลค่าหุ้นเดิมและตรวจสอบอายุการเป็นสมาชิกเดิมตาม <code>SHUCFTRANMEMBTYPE</code> เพื่อให้สิทธิ์ซื้อหุ้นพิเศษ (<code>SPTPERMISS_VALUE</code>)</td>
+                <td><code>ws_mem_reqappl.aspx.cs:CheckTranMembtype</code>, <code>DsMain.ascx.cs:ShowHeadSptPermiss</code></td>
+            </tr>
+            <tr>
+                <td>11</td>
+                <td>สามารถค้นหาและดึงรหัสไปรษณีย์อัตโนมัติตามตำบลที่เลือก</td>
+                <td>ดึงรหัสไปรษณีย์จากตาราง <code>MBUCFTAMBOL</code> มาใส่ในที่อยู่หลัก ที่อยู่อื่นๆ และที่อยู่ครอบครัว</td>
+                <td><code>ws_mem_reqappl.aspx.cs:PostTambolM</code>, <code>ws_mem_reqappl.aspx.cs:PostTambol</code>, <code>ws_mem_reqappl.aspx.cs:PostTambolFamily</code></td>
+            </tr>
+            <tr>
+                <td>12</td>
+                <td>สามารถคัดลอกที่อยู่หลักไปยังที่อยู่อื่นๆ หรือที่อยู่ครอบครัว</td>
+                <td>คัดลอก บ้านเลขที่ หมู่ ซอย ถนน ตำบล อำเภอ จังหวัด รหัสไปรษณีย์ ไปยังแถวข้อมูลที่เลือก</td>
+                <td><code>ws_mem_reqappl.aspx.cs:PostDupAdd</code>, <code>ws_mem_reqappl.aspx.cs:PostDupFamily</code></td>
+            </tr>
+            <tr>
+                <td>13</td>
+                <td>สามารถเพิ่ม ลบ และแก้ไขรายการที่อยู่อื่นๆ ได้หลายรายการ</td>
+                <td>จัดการข้อมูลที่อยู่อื่นๆ เช่น ที่อยู่ตามทะเบียนบ้าน ที่อยู่จัดส่งเอกสาร ในรูปแบบ Repeater</td>
+                <td><code>ws_mem_reqappl.aspx.cs:PostInsertAdd</code>, <code>ws_mem_reqappl.aspx.cs:PostDeleteAdd</code>, <code>DsAddress.ascx.cs</code></td>
+            </tr>
+            <tr>
+                <td>14</td>
+                <td>สามารถเพิ่ม ลบ และแก้ไขข้อมูลบุคคลในครอบครัว/ผู้รับผลประโยชน์</td>
+                <td>จัดการข้อมูลบุคคลในครอบครัว ความสัมพันธ์ วันเกิด เลขบัตรประชาชน และที่อยู่</td>
+                <td><code>ws_mem_reqappl.aspx.cs:PostInsertFamily</code>, <code>ws_mem_reqappl.aspx.cs:PostDeleteFamily</code>, <code>DsFamily.ascx.cs</code></td>
+            </tr>
+            <tr>
+                <td>15</td>
+                <td>สามารถจัดการบัญชีหลักและบัญชีอื่นๆ สำหรับการทำรายการเงิน</td>
+                <td>จัดการบัญชีธนาคารสำหรับจ่ายเงินปันผล (<code>DVAV1</code>), หักเงินเดือน (<code>KEEP1</code>) และบัญชีโอนเงินอื่นๆ</td>
+                <td><code>ws_mem_reqappl.aspx.cs:PostInsertMt</code>, <code>ws_mem_reqappl.aspx.cs:PostDeleteMt</code>, <code>ws_mem_reqappl.aspx.cs:PostSetAcc</code>, <code>DsMoneytr.ascx.cs</code>, <code>DsAccountMain.ascx.cs</code></td>
+            </tr>
+            <tr>
+                <td>16</td>
+                <td>สามารถบันทึกข้อมูลการโอนย้ายมาจากสหกรณ์อื่น</td>
+                <td>บันทึกชื่อสหกรณ์เดิม วันที่เป็นสมาชิกเดิม มูลค่าหุ้น งวดรับโอน และมูลค่าหนี้สิน</td>
+                <td><code>ws_mem_reqappl.aspx.cs:PostTranFlag</code>, <code>DsTransfer.ascx.cs</code></td>
+            </tr>
+            <tr>
+                <td>17</td>
+                <td>สามารถค้นหาและจับคู่หน่วยเลือกตั้งอัตโนมัติตามฝ่ายงาน</td>
+                <td>ค้นหาหน่วยเลือกตั้งจาก <code>ELCMAPELECTION</code> และ <code>MBUCFMEMBGRPELEC</code> ตามรหัสสังกัด/ฝ่ายงาน</td>
+                <td><code>ws_mem_reqappl.aspx.cs:PostSetElection</code></td>
+            </tr>
+            <tr>
+                <td>18</td>
+                <td>สามารถเปิดหน้าต่างค้นหาข้อมูลอ้างอิงต่างๆ ผ่าน Dialog</td>
+                <td>เปิดหน้าต่างค้นหาสังกัด (<code>wd_mem_group</code>), ฝ่ายงาน (<code>wd_mem_department</code>), ตำแหน่ง (<code>wd_mem_position</code>) และสมาชิกอ้างอิง (<code>wd_mem_search_ref</code>)</td>
+                <td><code>ws_mem_reqappl.aspx:OnDsMainClicked</code>, <code>ws_mem_reqappl.aspx:GetMembRefFromDlg</code></td>
+            </tr>
+            <tr>
+                <td>19</td>
+                <td>สามารถบันทึกใบคำขอใหม่และแก้ไขใบคำขอเดิม</td>
+                <td>ตรวจสอบความถูกต้องและบันทึกลงตาราง <code>MBREQAPPL</code>, <code>MBREQAPPLADDRESS</code>, <code>MBREQAPPLFAMILY</code>, <code>MBREQAPPLMONEYTR</code> พร้อมผูกรูปภาพผู้สมัคร</td>
+                <td><code>ws_mem_reqappl.aspx.cs:SaveWebSheet</code></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>4. กฎทางธุรกิจและการตรวจสอบข้อมูล</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 8%;">รหัส Rule</th>
+                <th style="width: 42%;">เงื่อนไข/สูตรคำนวณ (ค่าจริง)</th>
+                <th>ผลลัพธ์เมื่อไม่ผ่าน</th>
+                <th style="width: 25%;">อ้างอิงไฟล์:บรรทัด</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>BR-01</td>
+                <td>ตรวจสอบฟิลด์บังคับ Client-side: memb_name ห้ามว่าง; หาก membcat_code เป็น "10" หรือ "20" ต้องระบุ prename_code, card_person, memb_surname, birth_date, membgroup_code; membcat_code ห้ามว่าง; หาก membcat_code == "10" ต้องระบุ salary_amount; หาก pauseshare_flag != 1 ต้องระบุ periodshare_value</td>
+                <td>แจ้งเตือนข้อความเตือนตามฟิลด์ที่ไม่ครบถ้วน และระงับการ Submit</td>
+                <td><code>ws_mem_reqappl.aspx:19-58</code></td>
+            </tr>
+            <tr>
+                <td>BR-02</td>
+                <td>ตรวจสอบเลขประจำตัวประชาชน 13 หลัก ด้วย Check Digit Mod 11: sum = SUM(PID[i-1] × (14 - i), i=1..12), หลักสุดท้ายต้องเท่ากับ (11 - (sum % 11)) % 10 (ยกเว้นคำนำหน้านิติบุคคล "09", "10", "66", "67", "77", "78", "79")</td>
+                <td>เคลียร์ค่าว่างในฟิลด์ และแจ้งเตือน "เลขบัตรประชาชนไม่ครบ 13 หลัก" หรือ "เลขบัตรประชาชนไม่ถูกต้อง"</td>
+                <td><code>ws_mem_reqappl.aspx.cs:532-576</code>, <code>ws_mem_reqappl.aspx.cs:2068-2127</code>, <code>ws_mem_reqappl.aspx:195</code></td>
+            </tr>
+            <tr>
+                <td>BR-03</td>
+                <td>ตรวจสอบสมาชิกภาพเดิม: MBMEMBMASTER.CARD_PERSON = {0} และ RESIGN_STATUS = 0</td>
+                <td>แจ้งเตือน "เลขบัตรประชาชนนี้เป็นสมาชิกสหกรณ์อยู่เเล้ว เลขสมาชิก {member_no}" และไม่อนุญาตให้ทำรายการต่อ</td>
+                <td><code>ws_mem_reqappl.aspx.cs:1475, 1496-1499</code></td>
+            </tr>
+            <tr>
+                <td>BR-04</td>
+                <td>ตรวจสอบใบคำขอซ้ำ: MBREQAPPL.CARD_PERSON = {0} และ APPL_STATUS = 8 (รออนุมัติ)</td>
+                <td>แจ้งเตือน "เลขบัตรประชาชนนี้มีใบคำขอแล้ว เลขที่ใบคำขอ {appl_docno}" / "มีใบคำขออยู่แล้ว {appl_docno}" และไม่อนุญาตให้สร้างใบคำขอซ้ำ</td>
+                <td><code>ws_mem_reqappl.aspx.cs:1304-1311, 1476, 1501-1504</code></td>
+            </tr>
+            <tr>
+                <td>BR-05</td>
+                <td>ตรวจสอบจำนวนครั้งสูงสุดในการสมัคร: จำนวนครั้งที่เคยลาออก (resign_count) จาก MBMEMBMASTER ที่ RESIGN_STATUS = 1 เปรียบเทียบกับ MBUCFCATEGORY.MAXAPPL_TIME (resign_max) โดยเงื่อนไขคือ resign_max <= resign_count และ resign_count > 0</td>
+                <td>แจ้งเตือน "เลขบัตรประชาชนนี้ได้สมัครเกินจำนวนที่สหกรณ์กำหนด" และไม่อนุญาตให้สมัคร</td>
+                <td><code>ws_mem_reqappl.aspx.cs:1477-1483, 1506-1512</code></td>
+            </tr>
+            <tr>
+                <td>BR-06</td>
+                <td>ตรวจสอบระยะเวลาการรอคอยหลังลาออกก่อนสมัครใหม่: resigndate = (SsWorkDate - max(resign_date)) / 30 (เดือน) เปรียบเทียบกับ MBUCFCATEGORY.RETURNAPPL_PERIOD (resign_period) โดยเงื่อนไขคือ resign_period > resigndate</td>
+                <td>แจ้งเตือน "เลขบัตรประชาชนนี้ยังลาออกไม่ครบ {resign_period} เดือน" และไม่อนุญาตให้สมัคร</td>
+                <td><code>ws_mem_reqappl.aspx.cs:1484-1490, 1515-1527</code></td>
+            </tr>
+            <tr>
+                <td>BR-07</td>
+                <td>ตรวจสอบประวัติการลาออกใน CheckPerson: คำนวณระยะเวลา TotalYear = (SsWorkDate - resign_date) / 356 และนับจำนวนครั้งที่เคยลาออก rowcount</td>
+                <td>แจ้งเตือนกรณีลาออกมายังไม่ถึง 2 ปี หรือเคยลาออกเกิน 1 ครั้ง หรือเกิน 2 ครั้ง</td>
+                <td><code>ws_mem_reqappl.aspx.cs:1724-1748</code></td>
+            </tr>
+            <tr>
+                <td>BR-08</td>
+                <td>ตรวจสอบอายุขั้นต่ำของผู้สมัคร: คำนวณอายุ (เดือน) จาก WebUtil.GetAge(BIRTH_DATE, SsWorkDate, 3, 1) เปรียบเทียบกับ MBUCFMEMBTYPE.REGIS_AGE (chkage) โดยเงื่อนไขคือ อายุ (ปี) < chkage หรือ SsWorkDate < BIRTH_DATE</td>
+                <td>แจ้งเตือน "ไม่สามารถสมัครได้ เพราะอายุยังไม่ถึง {chkage} ปี" หรือ "วันเกิดมากกว่าวันที่ปัจุบัน" เคลียร์ค่าวันเกิด และรีเฟรชหน้าจอ</td>
+                <td><code>ws_mem_reqappl.aspx.cs:767-788, 1289-1301</code></td>
+            </tr>
+            <tr>
+                <td>BR-09</td>
+                <td>คำนวณวันเกษียณอายุ: ดึง RETIRE_AGE, RETIRE_DAY, RETIRE_MONTH จาก MBUCFMEMBTYPE หากเดือนเกิด >= RETIRE_MONTH ให้ retire_age = retire_age + 1, วันเกษียณ = BIRTH_DATE.AddYears(retire_age).Year + RETIRE_MONTH + RETIRE_DAY</td>
+                <td>กำหนดค่าลงในฟิลด์ RETIRE_DATE โดยอัตโนมัติ</td>
+                <td><code>ws_mem_reqappl.aspx.cs:732-742, 794-804</code></td>
+            </tr>
+            <tr>
+                <td>BR-10</td>
+                <td>เงื่อนไขสิทธิ์งดส่งค่าหุ้นรายเดือน: สำหรับ MEMBCAT_CODE != "20" จะเปิดให้เลือก pauseshare_flag ได้เมื่ออายุผู้สมัคร >= 60 ปีบริบูรณ์เท่านั้น หากเลือกงดส่งหุ้น ให้ PERIODSHARE_VALUE = 0</td>
+                <td>หากอายุไม่ถึง 60 ปี จะ Disable ช่องเลือกงดส่งหุ้น</td>
+                <td><code>ws_mem_reqappl.aspx.cs:590-603, 743-749, 805-814</code></td>
+            </tr>
+            <tr>
+                <td>BR-11</td>
+                <td>ตรวจสอบมูลค่าการส่งค่าหุ้นรายเดือน (Client): periodshare_value >= 0, (periodshare_value % 10) == 0 (ทวีคูณของ 10), periodshare_value >= 100 (ขั้นต่ำ 100 บาท), และสำหรับกลุ่ม 10 periodshare_value <= salary_amount</td>
+                <td>รีเซ็ตค่า PERIODSHARE_VALUE กลับเป็นค่า PERIODBASE_VALUE และแจ้งเตือนข้อความข้อผิดพลาด</td>
+                <td><code>ws_mem_reqappl.aspx:134-160</code></td>
+            </tr>
+            <tr>
+                <td>BR-12</td>
+                <td>ตรวจสอบมูลค่าการส่งค่าหุ้นรายเดือน (Server) กลุ่มสมาชิก 10: <br>1. กรณีไม่เคยลาออกและยังไม่เกษียณ: PERIODSHARE_VALUE >= PERIODBASE_VALUE<br>2. กรณีเคยลาออกและอายุ < 60 ปี (APPLTYPE_CODE == "10"): PERIODSHARE_VALUE == PERIODBASE_VALUE<br>3. กรณีเคยลาออกและอายุ < 60 ปี (APPLTYPE_CODE != "10"): PERIODSHARE_VALUE >= PERIODBASE_VALUE<br>4. กรณีเคยลาออกและอายุ >= 60 ปี: PERIODSHARE_VALUE <= 3000 (ไม่เกิน 3,000 บาท/เดือน)<br>5. ตรวจสอบเพดานสูงสุด: PERIODSHARE_VALUE <= share_max (จาก WebUtil.GetMinMaxShareBase)</td>
+                <td>ปรับค่า PERIODSHARE_VALUE กลับเป็นค่าฐาน หรือเพดานสูงสุด และแจ้งเตือนข้อความเตือน</td>
+                <td><code>ws_mem_reqappl.aspx.cs:620-703</code></td>
+            </tr>
+            <tr>
+                <td>BR-13</td>
+                <td>คำนวณสิทธิ์ซื้อหุ้นโอนย้ายประเภทสมาชิก: คำนวณอายุการเป็นสมาชิกเดิมเต็มเดือน fullMonths = (work_date.Year - member_date.Year) × 12 + (work_date.Month - member_date.Month) (หาก work_date.Day < member_date.Day ให้ลด 1 เดือน) หาก fullMonths >= MEMBTIME_AMT: กำหนด SPTPERMISS_VALUE = min(LASTSHARESTK_VALUE, MAXPERMISS_VALUE)</td>
+                <td>แสดงกรอบสิทธิ์ซื้อหุ้นโอนย้ายประเภทสมาชิกและบันทึกค่าสิทธิ์ซื้อหุ้น</td>
+                <td><code>ws_mem_reqappl.aspx.cs:1636-1680</code>, <code>DsMain.ascx.cs:ShowHeadSptPermiss</code></td>
+            </tr>
+            <tr>
+                <td>BR-14</td>
+                <td>ตรวจสอบความถูกต้องของข้อมูลครอบครัวก่อนบันทึก: ตรวจสอบทุกแถวใน dsFamily ต้องระบุ RELATION_CODE และ CARD_PERSON ต้องมีความยาวเท่ากับ 13 หลัก</td>
+                <td>ระงับการบันทึก และแจ้งเตือน "กรอกข้อมูลครอบครัวไม่ครบ" หรือ "กรอกข้อมูลเลขบัตรประชาชนครอบครัวให้ถูกต้อง"</td>
+                <td><code>ws_mem_reqappl.aspx.cs:1229-1252, 1371-1394</code></td>
+            </tr>
+            <tr>
+                <td>BR-15</td>
+                <td>เงื่อนไขการอนุญาตแก้ไขใบคำขอเดิม: ใบคำขอเดิมที่จะแก้ไขได้ต้องมีสถานะ APPL_STATUS == 8 (รออนุมัติ) เท่านั้น</td>
+                <td>ไม่อนุญาตให้แก้ไข แจ้งเตือน "ไม่สามารถเปลี่ยนแปลงใบคำขอได้ เนื่องจากใบคำขอได้มีการจัดการแล้ว" และรีเฟรชหน้าจอ</td>
+                <td><code>ws_mem_reqappl.aspx.cs:1166, 1271-1275</code></td>
+            </tr>
+            <tr>
+                <td>BR-16</td>
+                <td>ตรวจสอบรูปแบบและขนาดข้อมูลติดต่อ: รูปแบบ Email ตาม Regular Expression /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, เบอร์โทรศัพท์มือถือ >= 10 หลัก, เบอร์โทรศัพท์บ้าน >= 8 หลัก, เบอร์โทรศัพท์ที่ทำงาน >= 8 หลัก</td>
+                <td>ล้างค่าในช่องกรอก และแจ้งเตือนให้กรอกข้อมูลให้ถูกต้องครบถ้วน</td>
+                <td><code>ws_mem_reqappl.aspx:265-288, 293-301</code></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>5. สิทธิ์การใช้งาน</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 25%;">Role/Permission</th>
+                <th style="width: 35%;">ฟังก์ชันที่ควบคุม</th>
+                <th>เงื่อนไข</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>ผู้ใช้งานระบบสมาชิกและหุ้น (mbshr user)</td>
+                <td>เข้าถึงหน้าจอใบสมัครสมาชิก บันทึกใบคำขอ แก้ไขใบคำขอ และค้นหาข้อมูล</td>
+                <td>ผ่านการยืนยันตัวตนในระบบ GCOOP และมีสิทธิ์ในระบบงาน <code>mbshr</code> (<code>state.SsApplication = "mbshr"</code>)</td>
+            </tr>
+            <tr>
+                <td>สิทธิ์การควบคุมระดับสาขา/สหกรณ์ (Coop Control)</td>
+                <td>การมองเห็นและบันทึกข้อมูลใบคำขอแยกตามสหกรณ์</td>
+                <td>กรองและบันทึกข้อมูลตามรหัสสหกรณ์ที่เข้าใช้งาน (<code>state.SsCoopControl</code>, <code>state.SsCoopId</code>)</td>
+            </tr>
+            <tr>
+                <td>สิทธิ์การแก้ไขใบคำขอ</td>
+                <td>การแก้ไขข้อมูลใบคำขอที่บันทึกไปแล้ว</td>
+                <td>จำกัดให้แก้ไขได้เฉพาะใบคำขอที่มีสถานะ <code>APPL_STATUS = 8</code> (รออนุมัติ) เท่านั้น ไม่อนุญาตให้แก้ไขใบคำขอที่อนุมัติหรือยกเลิกแล้ว</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>6. จุดเชื่อมโยงกับหน้าจอ/ระบบอื่น</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 15%;">ทิศทาง (เข้า/ออก)</th>
+                <th style="width: 35%;">ปลายทาง</th>
+                <th>เงื่อนไข/พารามิเตอร์</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>เข้า</td>
+                <td>เมนูหลักระบบสมาชิกและหุ้น (Saving.Applications.mbshr)</td>
+                <td>ผู้ใช้งานเปิดหน้าจอ <code>ws_mem_reqappl.aspx</code> จากเมนูระบบสมาชิกและหุ้น</td>
+            </tr>
+            <tr>
+                <td>ออก</td>
+                <td><code>wd_mem_group.aspx</code> (ws_dlg_membgroup)</td>
+                <td>เปิดหน้าต่างค้นหาสังกัดสมาชิก (<code>b_membgroup</code>) ส่งค่ากลับผ่านฟังก์ชัน JavaScript <code>GetMembgroupFromDlg(membgroup_code)</code></td>
+            </tr>
+            <tr>
+                <td>ออก</td>
+                <td><code>wd_mem_department.aspx</code> (wd_mem_department)</td>
+                <td>เปิดหน้าต่างค้นหาฝ่ายงาน/หน่วยงาน (<code>b_department</code>) ส่งค่ากลับผ่านฟังก์ชัน JavaScript <code>GetDepartmentFromDlg(department_code)</code></td>
+            </tr>
+            <tr>
+                <td>ออก</td>
+                <td><code>wd_mem_position.aspx</code> (wd_mem_position)</td>
+                <td>เปิดหน้าต่างค้นหาตำแหน่ง (<code>b_position</code>) ส่งค่ากลับผ่านฟังก์ชัน JavaScript <code>GetPositionFromDlg(position_code)</code></td>
+            </tr>
+            <tr>
+                <td>ออก</td>
+                <td><code>wd_mem_search_ref.aspx</code> (wd_mem_search_ref)</td>
+                <td>เปิดหน้าต่างค้นหาข้อมูลสมาชิกอ้างอิง (<code>b_membref</code>) ส่งค่ากลับผ่านฟังก์ชัน JavaScript <code>GetMembRefFromDlg(appl_docno)</code></td>
+            </tr>
+            <tr>
+                <td>ออก</td>
+                <td><code>wd_mem_request.aspx</code> (wd_mem_request)</td>
+                <td>เปิดหน้าต่างค้นหาใบคำขอสมัครสมาชิกเดิม (<code>MenubarOpen</code>) ส่งค่ากลับผ่านฟังก์ชัน JavaScript <code>GetApplFromDlg(appl_docno)</code></td>
+            </tr>
+            <tr>
+                <td>ออก</td>
+                <td><code>Applications/fom/dlg/wd_fom_upload_image_ctrl/wd_fom_upload_image.aspx</code></td>
+                <td>แสดงผ่าน iframe (<code>IMG_Iframe</code>) สำหรับจัดการรูปถ่ายผู้สมัครและเอกสารแนบ พารามิเตอร์: <code>Token</code>, <code>application=mbshr</code>, <code>img_type_code=001</code>, <code>column_name=appl_docno</code>, <code>column_data={appl_docno}</code></td>
+            </tr>
+            <tr>
+                <td>ออก</td>
+                <td><code>http://localhost:1888/ismartcard</code></td>
+                <td>บริการ Local REST Service บนเครื่องไคลเอนต์ เชื่อมต่อเครื่องอ่านบัตรประชาชนผ่าน HTTP GET เพื่อดึงข้อมูลชิปการ์ด</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>7. รายงาน/เอกสารที่สร้างได้</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 30%;">ชื่อรายงาน</th>
+                <th>เงื่อนไขการสร้าง</th>
+                <th style="width: 20%;">รูปแบบไฟล์</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>ไม่มี</td>
+                <td>ไม่มี</td>
+                <td>ไม่มี</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>8. ตารางข้อมูลที่เกี่ยวข้อง</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 35%;">ชื่อตาราง</th>
+                <th>ใช้ในฟังก์ชัน/Rule ข้อใด (อ้างอิงเลขจากหัวข้อ 3/4)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>ALL_TAB_COLUMNS</td>
+                <td>ฟังก์ชันที่ 19 (ตรวจสอบโครงสร้างคอลัมน์ในฐานข้อมูลผ่าน checkData)</td>
+            </tr>
+            <tr>
+                <td>CMDOCUMENTCONTROL</td>
+                <td>ฟังก์ชันที่ 19, Rule BR-01 (ดึงและอัปเดตเลขที่เอกสารคำขอล่าสุด 'MBAPPLDOCNO')</td>
+            </tr>
+            <tr>
+                <td>CMUCFBANK</td>
+                <td>ฟังก์ชันที่ 15 (ดึงรายการธนาคารสำหรับบัญชีรับจ่าย/เงินปันผล/หักส่ง)</td>
+            </tr>
+            <tr>
+                <td>CMUCFBANKBRANCH</td>
+                <td>ฟังก์ชันที่ 15 (ดึงรายการสาขาธนาคารตามธนาคารที่เลือก)</td>
+            </tr>
+            <tr>
+                <td>CMUCFMONEYTYPE</td>
+                <td>ฟังก์ชันที่ 15 (ดึงรายการประเภทการทำรายการเงิน เช่น CSH, TRN, SAL, DEP)</td>
+            </tr>
+            <tr>
+                <td>ELCMAPELECTION</td>
+                <td>ฟังก์ชันที่ 17 (ค้นหาและจับคู่หน่วยเลือกตั้งตามสังกัดและฝ่ายงาน)</td>
+            </tr>
+            <tr>
+                <td>MBMEMBMASTER</td>
+                <td>ฟังก์ชันที่ 3, 4, 10, Rule BR-03, BR-05, BR-06, BR-07, BR-13 (ตรวจสอบสมาชิกภาพเดิม, ประวัติการลาออก, ดึงข้อมูลสมาชิกเดิม, คำนวณสิทธิ์ซื้อหุ้น)</td>
+            </tr>
+            <tr>
+                <td>MBREQAPPL</td>
+                <td>ฟังก์ชันที่ 3, 5, 19, Rule BR-04, BR-15 (ตารางหลักบันทึก ตรวจสอบสถานะ และดึงข้อมูลใบคำขอสมัครสมาชิก)</td>
+            </tr>
+            <tr>
+                <td>MBREQAPPLADDRESS</td>
+                <td>ฟังก์ชันที่ 5, 13, 19 (บันทึกและดึงข้อมูลที่อยู่อื่นๆ ของใบคำขอ)</td>
+            </tr>
+            <tr>
+                <td>MBREQAPPLEXPENSE</td>
+                <td>ฟังก์ชันที่ 19 (โครงสร้างข้อมูลบัญชีรับจ่ายของใบคำขอใน DataSet1)</td>
+            </tr>
+            <tr>
+                <td>MBREQAPPLFAMILY</td>
+                <td>ฟังก์ชันที่ 5, 14, 19, Rule BR-14 (บันทึก ตรวจสอบ และดึงข้อมูลครอบครัว/ผู้รับผลประโยชน์ของใบคำขอ)</td>
+            </tr>
+            <tr>
+                <td>MBREQAPPLMONEYTR</td>
+                <td>ฟังก์ชันที่ 5, 15, 19 (บันทึกและดึงข้อมูลบัญชี/รายการเงินโอนของใบคำขอ)</td>
+            </tr>
+            <tr>
+                <td>MBUCFADDRESS</td>
+                <td>ฟังก์ชันที่ 13 (ดึงรายการประเภทที่อยู่)</td>
+            </tr>
+            <tr>
+                <td>MBUCFAPPLTYPE</td>
+                <td>ฟังก์ชันที่ 3, 8, Rule BR-12 (ดึงประเภทการสมัคร ครั้งที่สมัคร และค่าธรรมเนียมแรกเข้า)</td>
+            </tr>
+            <tr>
+                <td>MBUCFCATEGORY</td>
+                <td>ฟังก์ชันที่ 3, 7, 8, Rule BR-05, BR-06, BR-12 (ดึงกลุ่มสมาชิก จำนวนครั้งสมัครสูงสุด maxappl_time และระยะเวลารอคอย returnappl_period)</td>
+            </tr>
+            <tr>
+                <td>MBUCFDEPARTMENT</td>
+                <td>ฟังก์ชันที่ 17, 18 (ดึงรายการฝ่ายงาน และค้นหาหน่วยเลือกตั้ง)</td>
+            </tr>
+            <tr>
+                <td>MBUCFDEPTCONTROL</td>
+                <td>ฟังก์ชันที่ 18 (ดึงรายการสำนัก/กรม ใน Dialog ค้นหาฝ่ายงาน)</td>
+            </tr>
+            <tr>
+                <td>MBUCFDEPTDIVISION</td>
+                <td>ฟังก์ชันที่ 18 (ดึงรายการกอง/กลุ่มงาน ใน Dialog ค้นหาฝ่ายงาน)</td>
+            </tr>
+            <tr>
+                <td>MBUCFDEPTMINISTRY</td>
+                <td>ฟังก์ชันที่ 18 (ดึงรายการกระทรวง ใน Dialog ค้นหาฝ่ายงาน)</td>
+            </tr>
+            <tr>
+                <td>MBUCFDEPTSECTION</td>
+                <td>ฟังก์ชันที่ 18 (ดึงรายการแผนกงาน ใน Dialog ค้นหาฝ่ายงาน)</td>
+            </tr>
+            <tr>
+                <td>MBUCFDISTRICT</td>
+                <td>ฟังก์ชันที่ 1, 11 (ดึงรายการอำเภอตามจังหวัดที่เลือก)</td>
+            </tr>
+            <tr>
+                <td>MBUCFFAMILY</td>
+                <td>ฟังก์ชันที่ 14 (ดึงรายการประเภทความสัมพันธ์ครอบครัว)</td>
+            </tr>
+            <tr>
+                <td>MBUCFMEMBGROUP</td>
+                <td>ฟังก์ชันที่ 15, 17, 18, Rule BR-01 (ดึงรายการสังกัดสมาชิก และดึงรูปแบบการชำระเงิน expense_code)</td>
+            </tr>
+            <tr>
+                <td>MBUCFMEMBGRPELEC</td>
+                <td>ฟังก์ชันที่ 17 (ดึงชื่อหน่วยเลือกตั้ง)</td>
+            </tr>
+            <tr>
+                <td>MBUCFMEMBTYPE</td>
+                <td>ฟังก์ชันที่ 6, 9, Rule BR-08, BR-09, BR-10 (ดึงอายุขั้นต่ำในการสมัคร regis_age, อายุเกษียณ retire_age, วัน/เดือนเกษียณ)</td>
+            </tr>
+            <tr>
+                <td>MBUCFMONEYTRTYPE</td>
+                <td>ฟังก์ชันที่ 15 (ดึงรายการประเภทรายการเงินโอน เช่น DVAV1, KEEP1)</td>
+            </tr>
+            <tr>
+                <td>MBUCFPOSITION</td>
+                <td>ฟังก์ชันที่ 18 (ดึงรายการตำแหน่งในหน้าจอหลักและ Dialog)</td>
+            </tr>
+            <tr>
+                <td>MBUCFPRENAME</td>
+                <td>ฟังก์ชันที่ 1, 3, Rule BR-02 (ดึงรายการคำนำหน้าชื่อ และตรวจสอบเพศ/ประเภทบุคคล)</td>
+            </tr>
+            <tr>
+                <td>MBUCFPROVINCE</td>
+                <td>ฟังก์ชันที่ 1, 11 (ดึงรายการจังหวัด)</td>
+            </tr>
+            <tr>
+                <td>MBUCFRESIGNCAUSE</td>
+                <td>ฟังก์ชันที่ 4 (ดึงคำอธิบายสาเหตุการลาออกครั้งล่าสุดของสมาชิกเดิม)</td>
+            </tr>
+            <tr>
+                <td>MBUCFTAMBOL</td>
+                <td>ฟังก์ชันที่ 1, 11 (ดึงรายการตำบลและรหัสไปรษณีย์)</td>
+            </tr>
+            <tr>
+                <td>SHSHARETYPE</td>
+                <td>ฟังก์ชันที่ 7, 10, Rule BR-13 (ดึงมูลค่าต่อหุ้น unitshare_value และตัวคูณปัดเศษ shareround_factor)</td>
+            </tr>
+            <tr>
+                <td>SHSHARETYPEMTHRATE</td>
+                <td>ฟังก์ชันที่ 7, 8, Rule BR-12 (ดึงอัตราส่งหุ้นฐานขั้นต่ำ-สูงสุดตามฐานเงินเดือน ใน WebUtil.GetMinMaxShareBase)</td>
+            </tr>
+            <tr>
+                <td>SHUCFTRANMEMBTYPE</td>
+                <td>ฟังก์ชันที่ 10, Rule BR-13 (ดึงเกณฑ์อายุสมาชิกเดิม membtime_amt และวงเงินสิทธิ์ซื้อหุ้นสูงสุด maxpermiss_value)</td>
+            </tr>
+            <tr>
+                <td>YRUCFMETHPAY</td>
+                <td>ฟังก์ชันที่ 15 (ดึงรายการช่องทางการจ่ายเงินปันผลสำหรับรายการ DVAV1)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>9. ข้อสังเกต / Confidence Notes</h2>
+    <ul>
+        <li><strong>จุดที่ควรให้ Business User ยืนยันเพิ่มเติม</strong>:
+            <ol>
+                <li>ในเมธอด <code>CheckPerson</code> (บรรทัด 1724-1735) มีการคำนวณระยะเวลาลาออกเป็นปีโดยใช้สูตร <code>TotalYear = diff1.TotalDays / 356</code> (หารด้วย 356 วัน แทนที่จะเป็น 365 วัน) ควรยืนยันว่าเป็นการตั้งใจหรือเป็นข้อผิดพลาดจากการพิมพ์</li>
+                <li>เมธอด <code>CheckCardPerson</code> (บรรทัด 1509, 1524) ใช้การตรวจสอบจำนวนครั้งที่ลาออก <code>resign_max</code> และระยะเวลาการลาออก <code>resign_period</code> (เดือน) ตาม <code>MBUCFCATEGORY</code> ซึ่งเป็นตรรกะใหม่กว่า <code>CheckPerson</code> แต่ในโค้ดยังคงมีทั้งสองฟังก์ชันทำงานซ้อนกันในบาง Event (เช่น Event การเปลี่ยน <code>SALARY_ID</code> หรือชื่อ-นามสกุล จะเรียก <code>CheckPerson</code> ในขณะที่ Event เลขบัตรประชาชนเรียก <code>CheckCardPerson</code>)</li>
+                <li>ใน <code>SaveWebSheet</code> กรณีบันทึกใบคำขอใหม่ มีการตรวจสอบอายุขั้นต่ำ <code>ageMonth / 12 &lt; chkage</code> (บรรทัด 1297) หากไม่ผ่านจะ <code>return</code> ออกทันทีโดยไม่มีข้อความแจ้งเตือนทางหน้าจอ</li>
+                <li>มีโค้ดที่ถูก Comment ในบรรทัด 685 เกี่ยวกับการจำกัดค่าส่งหุ้น 3,000 บาทสำหรับสมาชิกเกษียณอายุที่สมัครครั้งที่ 2</li>
+            </ol>
+        </li>
+        <li><strong>ความมั่นใจของเอกสาร (Confidence)</strong>: <span class="badge-success">High</span> (สกัดข้อมูลจากซอร์สโค้ด C# ASP.NET, User Controls, JavaScript และ Data Controls ของหน้าจอจริงครบถ้วน)</li>
+    </ul>
+
+</div>
+
+</body>
+</html>
